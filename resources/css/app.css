@@ -1,0 +1,91 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ─── Brand colours as CSS variables ──────────────────── */
+:root {
+    --c-base:    #E9E9E5;
+    --c-green:   #185909;
+    --c-dark:    #111D02;
+    --c-gold:    #D29500;
+    --c-forest:  #213A24;
+}
+
+/* ─── Base ────────────────────────────────────────────── */
+body {
+    background: var(--c-dark);
+    color: var(--c-base);
+    font-family: 'Figtree', sans-serif;
+    min-height: 100vh;
+}
+
+/* ─── Glassmorphism utilities ─────────────────────────── */
+@layer components {
+    .glass-card {
+        @apply bg-white/10 backdrop-blur-md border border-white/15 shadow-xl;
+    }
+
+    .glass-input {
+        @apply w-full rounded-xl border border-white/20 bg-white/10 px-4 py-2.5 text-sm
+               text-white placeholder-white/40 backdrop-blur-sm
+               focus:border-[#D29500] focus:outline-none focus:ring-1 focus:ring-[#D29500];
+    }
+
+    .glass-select {
+        @apply rounded-xl border border-white/20 bg-[#111D02] px-3 py-2 text-sm
+               text-white backdrop-blur-sm
+               focus:border-[#D29500] focus:outline-none focus:ring-1 focus:ring-[#D29500];
+    }
+
+    .btn-primary {
+        @apply rounded-xl bg-[#185909] px-5 py-2.5 text-sm font-semibold text-white
+               shadow-md transition hover:bg-[#1e6e0a] active:scale-95
+               focus:outline-none focus:ring-2 focus:ring-[#D29500];
+    }
+
+    .btn-gold {
+        @apply rounded-xl bg-[#D29500] px-5 py-2.5 text-sm font-semibold text-[#111D02]
+               shadow-md transition hover:bg-[#e0a800] active:scale-95;
+    }
+
+    .btn-ghost {
+        @apply rounded-xl border border-white/20 px-5 py-2.5 text-sm font-semibold text-white
+               backdrop-blur-sm transition hover:bg-white/10 active:scale-95;
+    }
+
+    .label {
+        @apply mb-1 block text-xs font-medium text-white/60;
+    }
+
+    .text-gold {
+        color: var(--c-gold);
+    }
+
+    .nav-link {
+        @apply rounded-lg px-3 py-2 text-sm font-medium text-white/70
+               transition hover:bg-white/10 hover:text-white;
+    }
+
+    .nav-link-active {
+        @apply rounded-lg px-3 py-2 text-sm font-semibold text-[#D29500] bg-white/10;
+    }
+}
+
+/* ─── Animated gradient background ───────────────────── */
+.bg-expo {
+    background: linear-gradient(135deg, #111D02 0%, #213A24 50%, #111D02 100%);
+    background-size: 200% 200%;
+    animation: gradientShift 12s ease infinite;
+}
+
+@keyframes gradientShift {
+    0%   { background-position: 0% 50%; }
+    50%  { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+/* ─── Scrollbar ───────────────────────────────────────── */
+::-webkit-scrollbar       { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #185909; border-radius: 99px; }
+
