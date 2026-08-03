@@ -19,7 +19,7 @@
                     style="background:linear-gradient(135deg,#185909,#2d7a10)">
                 + Add Attendee
             </button>
-            <a href="{{ route(`attend`) }}" target="_blank"
+            <a href="{{ route('attend') }}" target="_blank"
                class="px-4 py-2 rounded-lg text-sm font-semibold"
                style="background:rgba(24,89,9,0.3);border:1px solid #185909;color:#4ade80">
                 Registration Form ↗
@@ -27,23 +27,23 @@
         </div>
     </div>
 
-    @if(session(`success`))
+    @if(session('success'))
     <div class="px-4 py-2 rounded-lg text-sm text-green-300"
          style="background:rgba(24,89,9,0.3);border:1px solid #185909">
-        {{ session(`success`) }}
+        {{ session('success') }}
     </div>
     @endif
 
     {{-- Search --}}
     <form method="GET" class="flex gap-2">
-        <input type="text" name="search" value="{{ request(`search`) }}"
+        <input type="text" name="search" value="{{ request('search') }}"
                placeholder="Search name, org, phone, reg number…"
                class="flex-1 rounded-lg px-4 py-2 text-white text-sm placeholder-gray-500 focus:outline-none"
                style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.12)">
         <button type="submit" class="px-4 py-2 rounded-lg text-sm font-semibold text-white"
                 style="background:rgba(24,89,9,0.4);border:1px solid #185909">Search</button>
-        @if(request(`search`))
-        <a href="{{ route(`admin.attendees`) }}"
+        @if(request('search'))
+        <a href="{{ route('admin.attendees') }}"
            class="px-4 py-2 rounded-lg text-sm text-gray-400"
            style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1)">Clear</a>
         @endif
@@ -69,7 +69,7 @@
                 <tr class="border-b border-white border-opacity-5 hover:bg-white hover:bg-opacity-5 transition-colors">
                     <td class="px-4 py-3 text-gray-500">{{ $attendees->firstItem() + $i }}</td>
                     <td class="px-4 py-3 text-white font-medium">{{ $a->name }}</td>
-                    <td class="px-4 py-3 text-gray-400">{{ $a->organisation ?? `–` }}</td>
+                    <td class="px-4 py-3 text-gray-400">{{ $a->organisation ?? '–' }}</td>
                     <td class="px-4 py-3 text-gray-400 text-xs">
                         <div>{{ $a->phone }}</div>
                         @if($a->email)<div class="text-gray-500">{{ $a->email }}</div>@endif
@@ -86,13 +86,13 @@
                               style="background:rgba(255,255,255,0.05);color:#9ca3af;border:1px solid rgba(255,255,255,0.1)">Pending</span>
                         @endif
                     </td>
-                    <td class="px-4 py-3 text-gray-500 text-xs">{{ $a->created_at->format(`d M Y`) }}</td>
+                    <td class="px-4 py-3 text-gray-500 text-xs">{{ $a->created_at->format('d M Y') }}</td>
                     <td class="px-4 py-3">
                         <div class="flex items-center justify-end gap-1">
                             <a href="{{ $a->verifyUrl() }}" target="_blank"
                                class="px-2 py-1 rounded text-xs text-gray-400 hover:text-white"
                                style="background:rgba(255,255,255,0.05)" title="View pass">↗</a>
-                            <button @click="openEdit({{ $a->id }}, `{{ addslashes($a->name) }}`, `{{ addslashes($a->organisation ?? ``) }}`, `{{ addslashes($a->email ?? ``) }}`, `{{ $a->phone }}`, {{ $a->checked_in ? `true` : `false` }})"
+                            <button @click="openEdit({{ $a->id }}, `{{ addslashes($a->name) }}`, `{{ addslashes($a->organisation ?? '') }}`, `{{ addslashes($a->email ?? '') }}`, `{{ $a->phone }}`, {{ $a->checked_in ? 'true' : 'false' }})"
                                     class="px-2 py-1 rounded text-xs font-medium"
                                     style="background:rgba(210,149,0,0.15);color:#D29500;border:1px solid rgba(210,149,0,0.3)">Edit</button>
                             <button @click="confirmDelete({{ $a->id }}, `{{ addslashes($a->name) }}`)"
@@ -105,7 +105,7 @@
                 <tr>
                     <td colspan="8" class="px-4 py-12 text-center text-gray-500">
                         No attendees yet.
-                        <a href="{{ route(`attend`) }}" class="text-green-400 underline ml-1">Share the registration link</a>
+                        <a href="{{ route('attend') }}" class="text-green-400 underline ml-1">Share the registration link</a>
                     </td>
                 </tr>
                 @endforelse
