@@ -13,6 +13,13 @@ class DeployWebhookController extends Controller
             return response()->json(['error' => 'Unauthorized'], 401);
         }
 
+        // Log tail mode — just return last error lines
+        if ($request->header('X-Log-Tail')) {
+            $log = storage_path('logs/laravel.log');
+            $lines = file_exists($log) ? array_slice(file($log), -30) : ['no log'];
+            return response()->json(['log' => implode('', $lines)]);
+        }
+
         $appRoot   = base_path();
         $publicHtml = '/home/insizaex/public_html';
         $log        = [];
