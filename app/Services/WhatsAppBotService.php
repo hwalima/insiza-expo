@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Enums\BookingStatus;
 use App\Enums\StandStatus;
+use App\Models\Attendee;
 use App\Models\Booking;
 use App\Models\Expo;
 use App\Models\Stand;
@@ -29,6 +30,29 @@ class WhatsAppBotService
     {
         $user  = $this->resolveUser($from);
         $state = $this->getState($from);
+
+        // Quick registration number lookup (IDIxxxx-NNNN pattern, no AI needed)
+        if (preg_match('/\b(IDI\d{4}-\d{4})\b/i', strtoupper(trim($body)), $m)) {
+            $code     = strtoupper($m[1]);
+            $attendee = Attendee::where('registration_number', $code)->first();
+            if ($attendee) {
+                $status = $attendee->checked_in
+                    ? "✅ *Checked In* – " . $attendee->checked_in_at?->format('d M Y H:i')
+                    : "⏳ *Not yet checked in*";
+                $this->reply($from,
+                    "🎟️ *IDIEXPO Registration Verified*\n" .
+                    "Name: {$attendee->name}\n" .
+                    ($attendee->organisation ? "Organisation: {$attendee->organisation}\n" : "") .
+                    "Reg No: {$attendee->registration_number}\n" .
+                    "Status: {$status}\n\n" .
+                    "Verify link: " . $attendee->verifyUrl()
+                );
+                return;
+            } else {
+                $this->reply($from, "❌ Registration number *{$code}* not found. Please check and try again.");
+                return;
+            }
+        }
 
         $expo  = Expo::active();
         if (! $expo) {

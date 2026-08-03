@@ -28,6 +28,7 @@
             <a href="{{ route('admin.expo') }}"        class="{{ request()->routeIs('admin.expo*')      ? 'nav-link-active' : 'nav-link' }} block">Expo Management</a>
             <a href="{{ route('admin.floor-plan') }}"  class="{{ request()->routeIs('admin.floor-plan')  ? 'nav-link-active' : 'nav-link' }} block">Floor Plan Editor</a>
             <a href="{{ route('admin.bookings') }}"    class="{{ request()->routeIs('admin.bookings')    ? 'nav-link-active' : 'nav-link' }} block">Bookings</a>
+            <a href="{{ route('admin.attendees') }}"  class="{{ request()->routeIs('admin.attendees*')   ? 'nav-link-active' : 'nav-link' }} block">Attendees</a>
         </nav>
         <div class="border-t border-white/10 p-3">
             <a href="{{ route('home') }}" class="nav-link block text-xs">← Public Site</a>
@@ -49,6 +50,7 @@
                 <a href="{{ route('admin.expo') }}"       class="nav-link text-xs">Expo</a>
                 <a href="{{ route('admin.floor-plan') }}" class="nav-link text-xs">Floor</a>
                 <a href="{{ route('admin.bookings') }}"   class="nav-link text-xs">Bookings</a>
+                <a href="{{ route('admin.attendees') }}" class="nav-link text-xs">Attendees</a>
             </div>
         </header>
 

@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\AttendeeController;
 use App\Http\Controllers\DeployWebhookController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\PublicController;
@@ -11,6 +12,10 @@ use Illuminate\Support\Facades\Route;
 Route::get('/',            [PublicController::class, 'home'])->name('home');
 Route::get('/floor-plan',  [PublicController::class, 'floorPlan'])->name('floor-plan');
 Route::get('/about',       [PublicController::class, 'about'])->name('about');
+Route::get('/attend',      [AttendeeController::class, 'showForm'])->name('attend');
+Route::post('/attend',     [AttendeeController::class, 'register'])->name('attend.register');
+Route::get('/attend/success/{code}', [AttendeeController::class, 'success'])->name('attend.success');
+Route::get('/verify/{code}',         [AttendeeController::class, 'verify'])->name('attend.verify');
 
 // ── Breeze auth routes ────────────────────────────────────────
 Route::get('/dashboard', function () {
@@ -30,6 +35,8 @@ Route::middleware(['auth', 'role:admin|super_admin'])->prefix('admin')->name('ad
     Route::get('/expo/create', [DashboardController::class, 'expoCreate'])->name('expo.create');
     Route::get('/floor-plan',  [DashboardController::class, 'floorPlan'])->name('floor-plan');
     Route::get('/bookings',    [DashboardController::class, 'bookings'])->name('bookings');
+    Route::get('/attendees',   [AttendeeController::class, 'adminList'])->name('attendees');
+    Route::post('/attendees/checkin/{code}', [AttendeeController::class, 'checkIn'])->name('attendees.checkin');
 });
 
 // ── WhatsApp + Deploy webhooks (CSRF exempt) ─────────────────

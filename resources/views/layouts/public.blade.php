@@ -46,7 +46,7 @@
                     </form>
                 @else
                     <a href="{{ route('login') }}"    class="nav-link text-xs">Login</a>
-                    <a href="{{ route('register') }}" class="btn-primary text-xs !py-1.5">Register</a>
+                    <a href="{{ route('attend') }}" class="btn-primary text-xs !py-1.5">Attend Free</a>
                 @endauth
             </div>
         </div>
