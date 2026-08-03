@@ -13,11 +13,14 @@ class DeployWebhookController extends Controller
             return response()->json(['error' => 'Unauthorized'], 401);
         }
 
-        // Log tail mode — just return last error lines
+        // Log tail mode — return last error messages only
         if ($request->header('X-Log-Tail')) {
-            $log = storage_path('logs/laravel.log');
-            $lines = file_exists($log) ? array_slice(file($log), -30) : ['no log'];
-            return response()->json(['log' => implode('', $lines)]);
+            $log   = storage_path('logs/laravel.log');
+            $lines = file_exists($log) ? file($log) : ['no log'];
+            // Get last 200 lines then extract just ERROR lines
+            $tail   = array_slice($lines, -200);
+            $errors = array_filter($tail, fn($l) => str_contains($l, 'production.ERROR'));
+            return response()->json(['errors' => array_values(array_slice($errors, -5))]);
         }
 
         $appRoot   = base_path();
