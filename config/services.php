@@ -44,4 +44,8 @@ return [
         'api_key' => env('GROQ_API_KEY'),
     ],
 
+    'deploy' => [
+        'token' => env('DEPLOY_TOKEN'),
+    ],
+
 ];

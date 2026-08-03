@@ -1,32 +1,31 @@
 #!/bin/bash
 # deploy.sh — Pull latest code and restart the Laravel app
-# Run this on the cPanel server after each GitHub push:  bash deploy.sh
+# Triggered by the /deploy webhook or run manually on the server
 
-set -e  # stop on any error
+set -e
 
-cd "$(dirname "$0")"
+APP_DIR="$(dirname "$0")"
+PUBLIC_HTML="/home/insizaex/public_html"
+
+cd "$APP_DIR"
 
 echo "==> Pulling latest from GitHub..."
 git pull origin master
 
+echo "==> Copying compiled assets to public_html..."
+cp -r public/build "$PUBLIC_HTML/build"
+
 echo "==> Installing PHP dependencies..."
 composer install --no-dev --optimize-autoloader
-
-echo "==> Caching config, routes, views..."
-php artisan config:cache
-php artisan route:cache
-php artisan view:cache
-php artisan event:cache
 
 echo "==> Running database migrations..."
 php artisan migrate --force
 
-echo "==> Clearing old caches..."
-php artisan cache:clear
+echo "==> Rebuilding caches..."
+php artisan optimize:clear
+php artisan optimize
 
-echo "==> Building frontend assets..."
-npm ci --production=false
-npm run build
+echo "==> Done!"
 
 echo ""
 echo "✓ Deploy complete!"

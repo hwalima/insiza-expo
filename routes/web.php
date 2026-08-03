@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\DeployWebhookController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\PublicController;
 use App\Http\Controllers\WhatsAppController;
@@ -31,12 +32,12 @@ Route::middleware(['auth', 'role:admin|super_admin'])->prefix('admin')->name('ad
     Route::get('/bookings',    [DashboardController::class, 'bookings'])->name('bookings');
 });
 
-// ── WhatsApp webhooks (CSRF exempt) ──────────────────────────
-// /api/webhook/whatsapp is what Wasender is configured to call
+// ── WhatsApp + Deploy webhooks (CSRF exempt) ─────────────────
 Route::withoutMiddleware([\Illuminate\Foundation\Http\Middleware\VerifyCsrfToken::class])
     ->group(function () {
         Route::post('/webhook/whatsapp',     [WhatsAppController::class, 'webhook'])->name('webhook.whatsapp');
         Route::post('/api/webhook/whatsapp', [WhatsAppController::class, 'webhook'])->name('api.webhook.whatsapp');
+        Route::post('/deploy',               [DeployWebhookController::class, 'handle'])->name('deploy.webhook');
     });
 
 require __DIR__.'/auth.php';
