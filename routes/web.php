@@ -31,10 +31,13 @@ Route::middleware(['auth', 'role:admin|super_admin'])->prefix('admin')->name('ad
     Route::get('/bookings',    [DashboardController::class, 'bookings'])->name('bookings');
 });
 
-// ── WhatsApp webhook ──────────────────────────────────────────
-Route::post('/webhook/whatsapp', [WhatsAppController::class, 'webhook'])
-    ->name('webhook.whatsapp')
-    ->withoutMiddleware([\Illuminate\Foundation\Http\Middleware\VerifyCsrfToken::class]);
+// ── WhatsApp webhooks (CSRF exempt) ──────────────────────────
+// /api/webhook/whatsapp is what Wasender is configured to call
+Route::withoutMiddleware([\Illuminate\Foundation\Http\Middleware\VerifyCsrfToken::class])
+    ->group(function () {
+        Route::post('/webhook/whatsapp',     [WhatsAppController::class, 'webhook'])->name('webhook.whatsapp');
+        Route::post('/api/webhook/whatsapp', [WhatsAppController::class, 'webhook'])->name('api.webhook.whatsapp');
+    });
 
 require __DIR__.'/auth.php';
 
