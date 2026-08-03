@@ -133,5 +133,13 @@ class SettingsController extends Controller
         Config::set('mail.mailers.smtp.encryption', $enc === 'none' ? null : $enc);
         Config::set('mail.from.address', $from);
         Config::set('mail.from.name', $name);
+        // Allow self-signed/mismatched certs on shared cPanel hosting
+        Config::set('mail.mailers.smtp.stream', [
+            'ssl' => [
+                'allow_self_signed' => true,
+                'verify_peer'       => false,
+                'verify_peer_name'  => false,
+            ],
+        ]);
     }
 }

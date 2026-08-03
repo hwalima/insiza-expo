@@ -4,11 +4,13 @@ namespace App\Services;
 
 use App\Enums\BookingStatus;
 use App\Enums\StandStatus;
+use App\Mail\BookingConfirmation;
 use App\Models\Attendee;
 use App\Models\Booking;
 use App\Models\Expo;
 use App\Models\Stand;
 use App\Models\User;
+use App\Services\NotificationMailer;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Hash;
 
@@ -181,6 +183,15 @@ PROMPT;
         ]);
 
         $stand->update(['status' => StandStatus::Reserved]);
+
+        // Send booking confirmation email
+        dispatch(function () use ($booking) {
+            $booking->load(['stand', 'expo']);
+            $mailer = new NotificationMailer();
+            if ($booking->contact_email) {
+                $mailer->send(new BookingConfirmation($booking), $booking->contact_email);
+            }
+        })->afterResponse();
 
         return "Your booking request for Stand {$stand->stand_number} ({$stand->size->label()}) has been submitted! Our team will review and confirm within 24 hours. Thank you!";
     }

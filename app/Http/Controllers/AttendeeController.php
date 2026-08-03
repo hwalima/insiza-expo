@@ -2,8 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Mail\AdminNewAttendee;
+use App\Mail\AttendeeWelcome;
 use App\Models\Attendee;
 use App\Models\Expo;
+use App\Services\NotificationMailer;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 use Illuminate\Http\RedirectResponse;
@@ -33,6 +36,18 @@ class AttendeeController extends Controller
             'expo_id'             => $expo->id,
             'registration_number' => Attendee::generateRegNumber($expo->year),
         ]);
+
+        // Send emails (fire-and-forget after response)
+        dispatch(function () use ($attendee) {
+            $attendee->load('expo');
+            $mailer = new NotificationMailer();
+            if ($attendee->email) {
+                $mailer->send(new AttendeeWelcome($attendee), $attendee->email);
+            }
+            if ($admin = $mailer->adminEmail()) {
+                $mailer->send(new AdminNewAttendee($attendee), $admin);
+            }
+        })->afterResponse();
 
         return redirect()->route('attend.success', $attendee->registration_number);
     }
