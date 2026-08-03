@@ -29,6 +29,7 @@
             <a href="{{ route('admin.floor-plan') }}"  class="{{ request()->routeIs('admin.floor-plan')  ? 'nav-link-active' : 'nav-link' }} block">Floor Plan Editor</a>
             <a href="{{ route('admin.bookings') }}"    class="{{ request()->routeIs('admin.bookings')    ? 'nav-link-active' : 'nav-link' }} block">Bookings</a>
             <a href="{{ route('admin.attendees') }}"  class="{{ request()->routeIs('admin.attendees*')   ? 'nav-link-active' : 'nav-link' }} block">Attendees</a>
+            <a href="{{ route('admin.settings') }}"   class="{{ request()->routeIs('admin.settings*')   ? 'nav-link-active' : 'nav-link' }} block">Settings</a>
         </nav>
         <div class="border-t border-white/10 p-3">
             <a href="{{ route('home') }}" class="nav-link block text-xs">← Public Site</a>

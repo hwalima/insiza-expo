@@ -30,6 +30,7 @@ class DeployWebhookController extends Controller
         $commands = [
             "cd {$appRoot} && git pull origin master 2>&1",
             "cp -r {$appRoot}/public/build {$publicHtml}/build 2>&1",
+            "cd {$appRoot} && php artisan storage:link --force 2>&1",
             "cd {$appRoot} && php artisan migrate --force 2>&1",
             "cd {$appRoot} && php artisan optimize:clear 2>&1",
             "cd {$appRoot} && php artisan optimize 2>&1",

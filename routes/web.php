@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\SettingsController;
 use App\Http\Controllers\AttendeeController;
 use App\Http\Controllers\DeployWebhookController;
 use App\Http\Controllers\ProfileController;
@@ -40,6 +41,14 @@ Route::middleware(['auth', 'role:admin|super_admin'])->prefix('admin')->name('ad
     Route::put('/attendees/{attendee}',       [AttendeeController::class, 'adminUpdate'])->name('attendees.update');
     Route::delete('/attendees/{attendee}',    [AttendeeController::class, 'adminDestroy'])->name('attendees.destroy');
     Route::post('/attendees/checkin/{code}',  [AttendeeController::class, 'checkIn'])->name('attendees.checkin');
+
+    // Settings (super_admin only)
+    Route::get('/settings',                   [SettingsController::class, 'show'])->name('settings');
+    Route::patch('/settings/branding',        [SettingsController::class, 'updateBranding'])->name('settings.branding');
+    Route::patch('/settings/email',           [SettingsController::class, 'updateEmail'])->name('settings.email');
+    Route::post('/settings/test-email',       [SettingsController::class, 'testEmail'])->name('settings.test-email');
+    Route::patch('/settings/integrations',    [SettingsController::class, 'updateIntegrations'])->name('settings.integrations');
+    Route::patch('/settings/general',         [SettingsController::class, 'updateGeneral'])->name('settings.general');
 });
 
 // ── WhatsApp + Deploy webhooks (CSRF exempt) ─────────────────
