@@ -35,8 +35,11 @@ Route::middleware(['auth', 'role:admin|super_admin'])->prefix('admin')->name('ad
     Route::get('/expo/create', [DashboardController::class, 'expoCreate'])->name('expo.create');
     Route::get('/floor-plan',  [DashboardController::class, 'floorPlan'])->name('floor-plan');
     Route::get('/bookings',    [DashboardController::class, 'bookings'])->name('bookings');
-    Route::get('/attendees',   [AttendeeController::class, 'adminList'])->name('attendees');
-    Route::post('/attendees/checkin/{code}', [AttendeeController::class, 'checkIn'])->name('attendees.checkin');
+    Route::get('/attendees',                  [AttendeeController::class, 'adminList'])->name('attendees');
+    Route::post('/attendees',                 [AttendeeController::class, 'adminStore'])->name('attendees.store');
+    Route::put('/attendees/{attendee}',       [AttendeeController::class, 'adminUpdate'])->name('attendees.update');
+    Route::delete('/attendees/{attendee}',    [AttendeeController::class, 'adminDestroy'])->name('attendees.destroy');
+    Route::post('/attendees/checkin/{code}',  [AttendeeController::class, 'checkIn'])->name('attendees.checkin');
 });
 
 // ── WhatsApp + Deploy webhooks (CSRF exempt) ─────────────────
