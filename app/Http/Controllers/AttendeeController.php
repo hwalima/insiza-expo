@@ -45,17 +45,14 @@ class AttendeeController extends Controller
 
     public function verify(string $code): View
     {
-        $attendee = Attendee::where('registration_number', $code)
-                            ->with('expo')->firstOrFail();
+        $attendee = Attendee::where('registration_number', $code)->with('expo')->firstOrFail();
         return view('public.verify', compact('attendee'));
     }
 
-    // ── Admin CRUD ────────────────────────────────────────────
-
     public function adminList(Request $request): View
     {
-        $expo      = Expo::where('is_active', true)->first();
-        $query     = Attendee::where('expo_id', $expo?->id)->orderByDesc('created_at');
+        $expo  = Expo::where('is_active', true)->first();
+        $query = Attendee::where('expo_id', $expo?->id)->orderByDesc('created_at');
 
         if ($search = $request->input('search')) {
             $query->where(function ($q) use ($search) {
@@ -97,17 +94,17 @@ class AttendeeController extends Controller
             'organisation' => 'nullable|string|max:120',
             'email'        => 'nullable|email|max:120',
             'phone'        => 'required|string|max:30',
-            'checked_in'   => 'boolean',
+            'checked_in'   => 'nullable|boolean',
         ]);
 
-        if (isset($data['checked_in']) && $data['checked_in'] && !$attendee->checked_in) {
+        if (!empty($data['checked_in']) && !$attendee->checked_in) {
             $data['checked_in_at'] = now();
-        } elseif (isset($data['checked_in']) && !$data['checked_in']) {
+        } elseif (empty($data['checked_in'])) {
+            $data['checked_in']    = false;
             $data['checked_in_at'] = null;
         }
 
         $attendee->update($data);
-
         return back()->with('success', 'Attendee updated.');
     }
 
@@ -120,71 +117,7 @@ class AttendeeController extends Controller
     public function checkIn(string $code): JsonResponse
     {
         $attendee = Attendee::where('registration_number', $code)->firstOrFail();
-        $attendee->update([
-            'checked_in'    => true,
-            'checked_in_at' => now(),
-        ]);
-        return response()->json(['status' => 'ok', 'name' => $attendee->name]);
-    }
-}
-
-    public function showForm(): View
-    {
-        $expo = Expo::where('is_active', true)->first();
-        return view('public.attend', compact('expo'));
-    }
-
-    public function register(Request $request): RedirectResponse
-    {
-        $data = $request->validate([
-            'name'         => 'required|string|max:120',
-            'organisation' => 'nullable|string|max:120',
-            'email'        => 'nullable|email|max:120',
-            'phone'        => 'required|string|max:30',
-        ]);
-
-        $expo = Expo::where('is_active', true)->firstOrFail();
-
-        $attendee = Attendee::create([
-            ...$data,
-            'expo_id'             => $expo->id,
-            'registration_number' => Attendee::generateRegNumber($expo->year),
-        ]);
-
-        return redirect()->route('attend.success', $attendee->registration_number);
-    }
-
-    public function success(string $code): View
-    {
-        $attendee = Attendee::where('registration_number', $code)->firstOrFail();
-        return view('public.attend-success', compact('attendee'));
-    }
-
-    public function verify(string $code): View
-    {
-        $attendee = Attendee::where('registration_number', $code)
-                            ->with('expo')->firstOrFail();
-        return view('public.verify', compact('attendee'));
-    }
-
-    // Admin: list attendees
-    public function adminList(): View
-    {
-        $expo      = Expo::where('is_active', true)->first();
-        $attendees = Attendee::where('expo_id', $expo?->id)
-                             ->orderByDesc('created_at')
-                             ->paginate(50);
-        return view('admin.attendees', compact('attendees', 'expo'));
-    }
-
-    // Admin: check in an attendee
-    public function checkIn(string $code): \Illuminate\Http\JsonResponse
-    {
-        $attendee = Attendee::where('registration_number', $code)->firstOrFail();
-        $attendee->update([
-            'checked_in'    => true,
-            'checked_in_at' => now(),
-        ]);
+        $attendee->update(['checked_in' => true, 'checked_in_at' => now()]);
         return response()->json(['status' => 'ok', 'name' => $attendee->name]);
     }
 }
