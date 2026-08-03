@@ -38,8 +38,9 @@ class Attendee extends Model
 
     public function qrCodeUrl(int $size = 220): string
     {
+        // Black on white — maximum scanner contrast
         return 'https://api.qrserver.com/v1/create-qr-code/?size=' . $size . 'x' . $size
              . '&data=' . urlencode($this->verifyUrl())
-             . '&color=185909&bgcolor=111D02&margin=6';
+             . '&color=000000&bgcolor=ffffff&margin=6';
     }
 }

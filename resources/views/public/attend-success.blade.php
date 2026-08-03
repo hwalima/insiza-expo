@@ -3,6 +3,7 @@
 
 @push('head')
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 @endpush
 
 @section('content')
@@ -93,10 +94,7 @@
             {{-- Right: QR code --}}
             <div style="display:flex;flex-direction:column;align-items:center;gap:10px;min-width:200px">
                 <div style="background:white;padding:10px;border-radius:10px;border:3px solid #D29500">
-                    <img src="{{ $attendee->qrCodeUrl(180) }}"
-                         width="180" height="180"
-                         alt="QR Code"
-                         style="display:block">
+                    <div id="qr-code-canvas" style="width:180px;height:180px;display:block"></div>
                 </div>
                 <div style="color:#9ca3af;font-size:10px;text-align:center;line-height:1.4">
                     Scan at entrance<br>or WhatsApp bot
@@ -152,6 +150,16 @@
 </div>
 
 <script>
+// Render QR code natively (no CORS issues for html2canvas)
+new QRCode(document.getElementById('qr-code-canvas'), {
+    text: '{{ $attendee->verifyUrl() }}',
+    width: 180,
+    height: 180,
+    colorDark: '#000000',
+    colorLight: '#ffffff',
+    correctLevel: QRCode.CorrectLevel.H
+});
+
 function downloadCard() {
     const btn = event.target.closest('button');
     btn.textContent = 'Generating…';
@@ -160,6 +168,7 @@ function downloadCard() {
     html2canvas(document.getElementById('registration-card'), {
         scale: 2,
         useCORS: true,
+        allowTaint: false,
         backgroundColor: '#111D02',
         logging: false
     }).then(canvas => {
