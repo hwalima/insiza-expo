@@ -151,13 +151,15 @@
 
 <script>
 // Render QR code natively (no CORS issues for html2canvas)
-new QRCode(document.getElementById('qr-code-canvas'), {
-    text: '{{ $attendee->verifyUrl() }}',
-    width: 180,
-    height: 180,
-    colorDark: '#000000',
-    colorLight: '#ffffff',
-    correctLevel: QRCode.CorrectLevel.H
+document.addEventListener('DOMContentLoaded', function () {
+    new QRCode(document.getElementById('qr-code-canvas'), {
+        text: '{{ $attendee->verifyUrl() }}',
+        width: 180,
+        height: 180,
+        colorDark: '#000000',
+        colorLight: '#ffffff',
+        correctLevel: QRCode.CorrectLevel.H
+    });
 });
 
 function downloadCard() {
