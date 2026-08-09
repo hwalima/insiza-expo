@@ -47,6 +47,13 @@ class WhatsAppController extends Controller
         // Sanitise number to E.164 digits only
         $from = preg_replace('/\D/', '', $from);
 
+        // Don't reply to ourselves
+        $botNumber = preg_replace('/\D/', '', config('services.wasender.bot_number', '263775536178'));
+        if ($from === $botNumber) {
+            Log::info('WA webhook: skipping message from bot itself');
+            return response('', 200);
+        }
+
         Log::info('WA incoming message', ['from' => $from, 'body' => substr($body, 0, 120)]);
 
         try {

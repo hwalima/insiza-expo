@@ -38,6 +38,7 @@ return [
     'wasender' => [
         'api_key'        => env('WASENDER_API_KEY'),
         'webhook_secret' => env('WASENDER_WEBHOOK_SECRET'),
+        'bot_number'     => env('WASENDER_BOT_NUMBER', '263775536178'),
     ],
 
     'groq' => [
