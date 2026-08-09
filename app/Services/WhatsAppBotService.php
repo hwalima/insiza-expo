@@ -604,32 +604,32 @@ PROMPT;
 
     private function isListCommand(string $message): bool
     {
-        return preg_match('/^\s*(list|available|show\s*stands?|see\s*stands?|available\s*stands?|2)\s*$/i', $message) === 1;
+        return preg_match('/^\s*(list|available|show\s*stands?|see\s*stands?|available\s*stands?|stands|2)\s*$/i', $message) === 1;
     }
 
     private function isAllCommand(string $message): bool
     {
-        return preg_match('/^\s*(all|all\s*stands?|every\s*stand|3)\s*$/i', $message) === 1;
+        return preg_match('/^\s*(all|all\s*stands?|every\s*stand|show\s*all|3)\s*$/i', $message) === 1;
     }
 
     private function isMyBookingsCommand(string $message): bool
     {
-        return preg_match('/^\s*(my\s*bookings?|booking\s*status|check\s*my\s*booking|status|4)\s*$/i', $message) === 1;
+        return preg_match('/^\s*(my\s*bookings?|booking\s*status|check\s*my\s*booking|status|my\s*status|4)\s*$/i', $message) === 1;
     }
 
     private function isBookingIntentCommand(string $message): bool
     {
-        return preg_match('/^\s*(book|reserve|booking|book\s*a?\s*stand|reserve\s*a?\s*stand|1)\s*$/i', $message) === 1;
+        return preg_match('/^\s*(book|reserve|booking|book\s*a?\s*stand|reserve\s*a?\s*stand|i\s*want\s*to\s*book|1)\s*$/i', $message) === 1;
     }
 
     private function isMenuCommand(string $message): bool
     {
-        return preg_match('/^\s*(menu|help|hi|hello|start|hey|options)\s*$/i', $message) === 1;
+        return preg_match('/^\s*(menu|help|hi|hello|hie|start|hey|options|home|main)\s*$/i', $message) === 1;
     }
 
     private function isCancelCommand(string $message): bool
     {
-        return preg_match('/^\s*(cancel|stop|quit|exit)\s*$/i', $message) === 1;
+        return preg_match('/^\s*(cancel|stop|quit|exit|back)\s*$/i', $message) === 1;
     }
 
     private function resolveUser(string $from): ?User
