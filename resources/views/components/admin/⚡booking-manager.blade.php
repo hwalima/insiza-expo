@@ -33,6 +33,10 @@ new class extends Component
         $booking->update(['status' => BookingStatus::Approved, 'approved_at' => now()]);
         $booking->stand->update(['status' => \App\Enums\StandStatus::Occupied,
             'exhibitor_name' => $booking->company_name]);
+
+        $this->notifyExhibitor($booking,
+            "Your booking for Stand {$booking->stand?->stand_number} has been approved. The stand is now reserved for you.");
+
         unset($this->bookings);
     }
 
@@ -45,6 +49,10 @@ new class extends Component
         if (! $stand->bookings()->where('status', BookingStatus::Approved)->exists()) {
             $stand->update(['status' => \App\Enums\StandStatus::Available]);
         }
+
+        $this->notifyExhibitor($booking,
+            "Your booking request for Stand {$booking->stand?->stand_number} was not approved. Please contact the expo team if you want to try another stand.");
+
         unset($this->bookings);
     }
 
@@ -52,7 +60,26 @@ new class extends Component
     {
         $booking = Booking::findOrFail($id);
         $booking->update(['payment_verified' => ! $booking->payment_verified]);
+
+        if ($booking->payment_verified) {
+            $this->notifyExhibitor($booking,
+                "Payment received and confirmed for your booking of Stand {$booking->stand?->stand_number}. Thank you! We will send you final access information soon.");
+        } else {
+            $this->notifyExhibitor($booking,
+                "The payment status for your booking of Stand {$booking->stand?->stand_number} is now pending. Please arrange payment and reply here if you need help.");
+        }
+
         unset($this->bookings);
+    }
+
+    private function notifyExhibitor(Booking $booking, string $message): void
+    {
+        $recipient = $booking->user?->whatsapp_id ?: $booking->contact_phone;
+        if (! $recipient) {
+            return;
+        }
+
+        app(WasenderService::class)->sendText($recipient, $message);
     }
 };
 ?>
