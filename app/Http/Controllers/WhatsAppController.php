@@ -22,9 +22,16 @@ class WhatsAppController extends Controller
 
         // Optional webhook secret verification
         $secret = config('services.wasender.webhook_secret', '');
-        if ($secret && $request->header('X-Wasender-Secret') !== $secret) {
-            Log::warning('WA webhook: invalid secret');
-            return response('Unauthorized', 401);
+        if ($secret) {
+            $incoming = $request->header('X-Secret')
+                ?? $request->header('X-Wasender-Secret')
+                ?? $request->header('X-Webhook-Secret')
+                ?? $request->input('secret')
+                ?? '';
+            if ($incoming !== $secret) {
+                Log::warning('WA webhook: invalid secret', ['received' => $incoming]);
+                return response('Unauthorized', 401);
+            }
         }
 
         $payload = $request->json()->all();
@@ -42,8 +49,11 @@ class WhatsAppController extends Controller
 
         Log::info('WA incoming message', ['from' => $from, 'body' => substr($body, 0, 120)]);
 
-        // Fire-and-forget after response so Wasender gets 200 immediately
-        dispatch(fn() => $this->bot->handle($from, trim($body)))->afterResponse();
+        try {
+            $this->bot->handle($from, trim($body));
+        } catch (\Throwable $e) {
+            Log::error('WA bot error', ['error' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
+        }
 
         return response('', 200);
     }
