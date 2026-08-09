@@ -95,22 +95,43 @@ class WhatsAppController extends Controller
             return [$d['from'], $d['body'] ?? $d['text'] ?? $d['message'] ?? ''];
         }
 
-        // Format C: Baileys-style {"event":"messages.upsert","data":{"messages":[{...}]}}
-        if (isset($p['data']['messages'][0])) {
-            $msg  = $p['data']['messages'][0];
-            $from = $msg['key']['remoteJid'] ?? '';
-            $body = $msg['message']['conversation']
+        // Format C: Wasender {"event":"messages.received","data":{"messages":{single object}}}
+        if (isset($p['data']['messages']['key'])) {
+            $msg  = $p['data']['messages'];
+            $from = $msg['key']['cleanedSenderPn']
+                ?? preg_replace('/@.*/', '', $msg['key']['senderPn'] ?? '')
+                ?? $msg['key']['remoteJid']
+                ?? '';
+            $body = $msg['messageBody']
+                ?? $msg['message']['conversation']
                 ?? $msg['message']['extendedTextMessage']['text']
                 ?? $msg['message']['imageMessage']['caption']
                 ?? '';
-            // Skip messages sent BY us
             if (($msg['key']['fromMe'] ?? false) || empty($body)) {
                 return ['', ''];
             }
             return [$from, $body];
         }
 
-        // Format D: {"messages":[{"from":"27...", "text":"Hello"}]}
+        // Format D: Baileys-style {"event":"messages.upsert","data":{"messages":[{...}]}}
+        if (isset($p['data']['messages'][0])) {
+            $msg  = $p['data']['messages'][0];
+            $from = $msg['key']['cleanedSenderPn']
+                ?? preg_replace('/@.*/', '', $msg['key']['senderPn'] ?? '')
+                ?? $msg['key']['remoteJid']
+                ?? '';
+            $body = $msg['messageBody']
+                ?? $msg['message']['conversation']
+                ?? $msg['message']['extendedTextMessage']['text']
+                ?? $msg['message']['imageMessage']['caption']
+                ?? '';
+            if (($msg['key']['fromMe'] ?? false) || empty($body)) {
+                return ['', ''];
+            }
+            return [$from, $body];
+        }
+
+        // Format E: {"messages":[{"from":"27...", "text":"Hello"}]}
         if (isset($p['messages'][0])) {
             $m = $p['messages'][0];
             return [$m['from'] ?? '', $m['text'] ?? $m['body'] ?? ''];
