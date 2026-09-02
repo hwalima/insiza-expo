@@ -75,7 +75,10 @@
                         <button type="submit" class="nav-link text-xs">Logout</button>
                     </form>
                 @else
-                    <a href="{{ route('login') }}" class="nav-link text-xs hidden sm:inline">Login</a>
+                    <a href="{{ route('login') }}"
+                       class="rounded-xl border border-white/25 px-4 py-1.5 text-xs font-semibold text-white transition hover:bg-white/10 hover:border-white/40">
+                        Login
+                    </a>
                     <a href="{{ route('attend') }}" class="btn-primary text-xs !py-1.5">Attend Free</a>
                 @endauth
             </div>
