@@ -33,6 +33,8 @@ class DeployWebhookController extends Controller
             "cp -r {$appRoot}/public/build {$publicHtml}/build 2>&1",
             "ls {$publicHtml}/build/assets/ 2>&1",
             "cd {$appRoot} && php artisan storage:link --force 2>&1",
+            // Ensure the storage symlink is also present in public_html
+            "ln -sfn {$appRoot}/storage/app/public {$publicHtml}/storage 2>&1",
             "cd {$appRoot} && php artisan migrate --force 2>&1",
             "cd {$appRoot} && php artisan optimize:clear 2>&1",
             "cd {$appRoot} && php artisan optimize 2>&1",
