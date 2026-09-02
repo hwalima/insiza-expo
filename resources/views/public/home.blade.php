@@ -4,31 +4,83 @@
 @section('content')
 
 {{-- Hero --}}
-<section class="relative overflow-hidden rounded-3xl px-6 py-16 text-center sm:py-24">
-    {{-- Background layers: SVG dot-grid texture + radial glow + directional gradient --}}
-    <div class="pointer-events-none absolute inset-0 rounded-3xl"
-         style="background-image: radial-gradient(circle at 60% 40%, rgba(210,149,0,0.13) 0%, transparent 60%), radial-gradient(circle at 20% 70%, rgba(24,89,9,0.35) 0%, transparent 55%);"></div>
-    <svg class="pointer-events-none absolute inset-0 h-full w-full rounded-3xl opacity-[0.07]"
-         xmlns="http://www.w3.org/2000/svg">
-        <defs>
-            <pattern id="dots" x="0" y="0" width="20" height="20" patternUnits="userSpaceOnUse">
-                <circle cx="2" cy="2" r="1.2" fill="#D29500"/>
-            </pattern>
-        </defs>
-        <rect width="100%" height="100%" fill="url(#dots)"/>
-    </svg>
-    {{-- Bottom fade so section blends into page --}}
-    <div class="pointer-events-none absolute bottom-0 left-0 right-0 h-20 rounded-b-3xl bg-gradient-to-t from-[#111D02]/80 to-transparent"></div>
+<section
+    x-data="{
+        slides: [
+            'https://insizaexpo.co.zw/images/hero/hero1.jpg',
+            'https://insizaexpo.co.zw/images/hero/hero2.jpg',
+            'https://insizaexpo.co.zw/images/hero/hero3.jpg',
+        ],
+        current: 0,
+        loaded: [false, false, false],
+        init() {
+            // preload all slides
+            this.slides.forEach((src, i) => {
+                const img = new Image();
+                img.onload  = () => { this.loaded[i] = true; };
+                img.onerror = () => { this.loaded[i] = false; };
+                img.src = src;
+            });
+            setInterval(() => {
+                this.current = (this.current + 1) % this.slides.length;
+            }, 5000);
+        }
+    }"
+    class="relative overflow-hidden rounded-3xl px-6 py-20 text-center sm:py-32"
+    style="min-height: 420px;"
+>
+    {{-- Slide images --}}
+    <template x-for="(slide, i) in slides" :key="i">
+        <div
+            x-show="current === i && loaded[i]"
+            x-transition:enter="transition duration-1000 ease-in-out"
+            x-transition:enter-start="opacity-0 scale-105"
+            x-transition:enter-end="opacity-100 scale-100"
+            x-transition:leave="transition duration-700 ease-in-out"
+            x-transition:leave-start="opacity-100 scale-100"
+            x-transition:leave-end="opacity-0 scale-95"
+            class="pointer-events-none absolute inset-0"
+            style="display:none"
+        >
+            <img :src="slide" class="h-full w-full rounded-3xl object-cover object-center"
+                 :alt="'Hero slide ' + (i+1)">
+        </div>
+    </template>
 
+    {{-- Fallback gradient shown while images are loading or if all images fail --}}
+    <div class="pointer-events-none absolute inset-0 rounded-3xl"
+         x-show="!loaded.some(v => v)"
+         style="background: linear-gradient(135deg, #185909 0%, #111D02 60%, #1a2e12 100%); display:none"></div>
+    <div class="pointer-events-none absolute inset-0 rounded-3xl"
+         style="background: linear-gradient(135deg, rgba(17,29,2,0.80) 0%, rgba(17,29,2,0.55) 50%, rgba(17,29,2,0.72) 100%);"></div>
+
+    {{-- Gold radial glow top-right --}}
+    <div class="pointer-events-none absolute inset-0 rounded-3xl"
+         style="background: radial-gradient(circle at 75% 30%, rgba(210,149,0,0.18) 0%, transparent 55%);"></div>
+
+    {{-- Bottom fade --}}
+    <div class="pointer-events-none absolute bottom-0 left-0 right-0 h-24 rounded-b-3xl bg-gradient-to-t from-[#111D02] to-transparent"></div>
+
+    {{-- Slide dots --}}
+    <div class="absolute bottom-5 left-0 right-0 flex justify-center gap-1.5 z-10">
+        <template x-for="(slide, i) in slides" :key="i">
+            <button @click="current = i"
+                    :class="current === i ? 'bg-[#D29500] w-5' : 'bg-white/30 w-2'"
+                    class="h-2 rounded-full transition-all duration-300"
+                    :aria-label="'Go to slide ' + (i+1)"></button>
+        </template>
+    </div>
+
+    {{-- Content --}}
     @if($expo)
-        <p class="relative mb-2 text-sm font-semibold uppercase tracking-widest text-[#D29500]">
+        <p class="relative mb-2 text-sm font-semibold uppercase tracking-widest text-[#D29500] drop-shadow">
             {{ $expo->start_date->format('d M') }} &ndash; {{ $expo->end_date->format('d M Y') }} &bull; {{ $expo->venue }}
         </p>
         <h1 class="relative text-4xl font-extrabold leading-tight text-white drop-shadow-lg sm:text-6xl">
             {{ $expo->name }}
         </h1>
         @if($expo->theme)
-            <blockquote class="relative mx-auto mt-5 max-w-2xl rounded-2xl border border-[#D29500]/40 bg-[#D29500]/15 px-6 py-3 shadow-inner shadow-[#D29500]/10">
+            <blockquote class="relative mx-auto mt-5 max-w-2xl rounded-2xl border border-[#D29500]/40 bg-[#D29500]/15 px-6 py-3 shadow-inner shadow-[#D29500]/10 backdrop-blur-sm">
                 <p class="text-base font-medium italic text-[#D29500] sm:text-lg">&ldquo;{{ $expo->theme }}&rdquo;</p>
             </blockquote>
         @endif
@@ -37,8 +89,8 @@
             <a href="{{ route('about') }}"      class="btn-ghost w-full border border-white/20 sm:w-auto">Learn More</a>
         </div>
     @else
-        <h1 class="text-4xl font-extrabold text-white">Insiza District Industrial Expo</h1>
-        <p class="mt-4 text-white/60">Stay tuned &mdash; the next expo is coming soon.</p>
+        <h1 class="relative text-4xl font-extrabold text-white drop-shadow-lg">Insiza District Industrial Expo</h1>
+        <p class="relative mt-4 text-white/70">Stay tuned &mdash; the next expo is coming soon.</p>
     @endif
 </section>
 
