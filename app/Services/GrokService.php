@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\Log;
 class GrokService
 {
     private string $apiKey;
-    private string $model   = 'llama-3.3-70b-versatile'; // Groq's current recommended fast model
+    private string $model   = 'groq/compound'; // Groq's recommended fast chat model
     private string $baseUrl = 'https://api.groq.com/openai/v1/chat/completions';
 
     public function __construct()
