@@ -5,23 +5,36 @@
 
 {{-- Hero --}}
 <section class="relative overflow-hidden rounded-3xl px-6 py-16 text-center sm:py-24">
-    <div class="pointer-events-none absolute inset-0 rounded-3xl bg-gradient-to-br from-[#185909]/40 via-transparent to-[#D29500]/10"></div>
+    {{-- Background layers: SVG dot-grid texture + radial glow + directional gradient --}}
+    <div class="pointer-events-none absolute inset-0 rounded-3xl"
+         style="background-image: radial-gradient(circle at 60% 40%, rgba(210,149,0,0.13) 0%, transparent 60%), radial-gradient(circle at 20% 70%, rgba(24,89,9,0.35) 0%, transparent 55%);"></div>
+    <svg class="pointer-events-none absolute inset-0 h-full w-full rounded-3xl opacity-[0.07]"
+         xmlns="http://www.w3.org/2000/svg">
+        <defs>
+            <pattern id="dots" x="0" y="0" width="20" height="20" patternUnits="userSpaceOnUse">
+                <circle cx="2" cy="2" r="1.2" fill="#D29500"/>
+            </pattern>
+        </defs>
+        <rect width="100%" height="100%" fill="url(#dots)"/>
+    </svg>
+    {{-- Bottom fade so section blends into page --}}
+    <div class="pointer-events-none absolute bottom-0 left-0 right-0 h-20 rounded-b-3xl bg-gradient-to-t from-[#111D02]/80 to-transparent"></div>
 
     @if($expo)
         <p class="relative mb-2 text-sm font-semibold uppercase tracking-widest text-[#D29500]">
             {{ $expo->start_date->format('d M') }} &ndash; {{ $expo->end_date->format('d M Y') }} &bull; {{ $expo->venue }}
         </p>
-        <h1 class="relative text-4xl font-extrabold leading-tight text-white sm:text-6xl">
+        <h1 class="relative text-4xl font-extrabold leading-tight text-white drop-shadow-lg sm:text-6xl">
             {{ $expo->name }}
         </h1>
         @if($expo->theme)
-            <blockquote class="relative mx-auto mt-5 max-w-2xl rounded-2xl border border-[#D29500]/20 bg-[#D29500]/10 px-6 py-3">
-                <p class="text-base italic text-[#D29500] sm:text-lg">&ldquo;{{ $expo->theme }}&rdquo;</p>
+            <blockquote class="relative mx-auto mt-5 max-w-2xl rounded-2xl border border-[#D29500]/40 bg-[#D29500]/15 px-6 py-3 shadow-inner shadow-[#D29500]/10">
+                <p class="text-base font-medium italic text-[#D29500] sm:text-lg">&ldquo;{{ $expo->theme }}&rdquo;</p>
             </blockquote>
         @endif
         <div class="relative mt-8 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
             <a href="{{ route('floor-plan') }}" class="btn-gold w-full sm:w-auto">Book a Stand</a>
-            <a href="{{ route('about') }}"      class="btn-ghost w-full sm:w-auto">Learn More</a>
+            <a href="{{ route('about') }}"      class="btn-ghost w-full border border-white/20 sm:w-auto">Learn More</a>
         </div>
     @else
         <h1 class="text-4xl font-extrabold text-white">Insiza District Industrial Expo</h1>
@@ -66,14 +79,14 @@
     <div class="grid grid-cols-2 gap-3 sm:grid-cols-4">
 
         <a href="{{ route('floor-plan') }}"
-           class="glass-card group flex flex-col items-center justify-center rounded-2xl p-5 text-center transition-all duration-200 hover:-translate-y-0.5 hover:border-[#D29500]/50 hover:bg-white/15 hover:shadow-lg hover:shadow-[#D29500]/10 active:translate-y-0">
+           class="glass-card group flex flex-col items-center justify-center rounded-2xl border-l-4 border-l-[#D29500]/40 p-5 text-center transition-all duration-200 hover:-translate-y-0.5 hover:border-l-[#D29500] hover:bg-white/15 hover:shadow-lg hover:shadow-[#D29500]/10 active:translate-y-0">
             <p class="text-4xl font-extrabold text-[#D29500] transition-transform duration-150 group-hover:scale-110">{{ $standsTotal }}</p>
             <p class="mt-1 text-xs font-medium text-white/60">Total Stands</p>
             <span class="mt-1.5 text-[10px] text-[#D29500]/50 opacity-0 transition-opacity group-hover:opacity-100">View floor plan &rarr;</span>
         </a>
 
         <a href="{{ route('floor-plan') }}"
-           class="glass-card group flex flex-col items-center justify-center rounded-2xl p-5 text-center transition-all duration-200 hover:-translate-y-0.5 hover:border-green-500/50 hover:bg-white/15 hover:shadow-lg hover:shadow-green-500/10 active:translate-y-0">
+           class="glass-card group flex flex-col items-center justify-center rounded-2xl border-l-4 border-l-green-500/40 p-5 text-center transition-all duration-200 hover:-translate-y-0.5 hover:border-l-green-400 hover:bg-white/15 hover:shadow-lg hover:shadow-green-500/10 active:translate-y-0">
             <p class="text-4xl font-extrabold text-green-400 transition-transform duration-150 group-hover:scale-110">{{ $standsAvailable }}</p>
             <p class="mt-1 text-xs font-medium text-white/60">Available</p>
             <div class="mt-1.5 flex gap-2 text-[10px] opacity-0 transition-opacity group-hover:opacity-100">
@@ -83,57 +96,61 @@
             </div>
         </a>
 
+        {{-- Countdown — featured: spans full width on mobile, taller, gold accent --}}
         <button @click="panel = panel === 'dates' ? null : 'dates'"
-                :class="panel === 'dates' ? 'border-white/30 bg-white/15' : ''"
-                class="glass-card group flex flex-col items-center justify-center rounded-2xl p-5 text-center transition-all duration-200 hover:-translate-y-0.5 hover:border-white/30 hover:bg-white/15 hover:shadow-lg active:translate-y-0">
+                :class="panel === 'dates' ? 'border-l-[#D29500] bg-white/15' : 'border-l-[#D29500]/60'"
+                class="glass-card group col-span-2 flex flex-col items-center justify-center rounded-2xl border-l-4 px-5 py-6 text-center transition-all duration-200 hover:-translate-y-0.5 hover:border-l-[#D29500] hover:bg-white/15 hover:shadow-lg hover:shadow-[#D29500]/10 active:translate-y-0 sm:col-span-1">
 
             {{-- LIVE badge --}}
             <template x-if="live">
                 <div>
-                    <p class="text-2xl font-extrabold text-[#D29500] animate-pulse">LIVE</p>
-                    <p class="mt-0.5 text-xs font-medium text-white/60">Happening now!</p>
+                    <span class="inline-flex items-center gap-1.5 rounded-full bg-[#D29500]/20 px-3 py-1 text-xs font-bold uppercase tracking-widest text-[#D29500]">
+                        <span class="size-2 animate-ping rounded-full bg-[#D29500]"></span>
+                        Live Now
+                    </span>
+                    <p class="mt-2 text-sm text-white/60">Happening now!</p>
                 </div>
             </template>
 
             {{-- Countdown --}}
             <template x-if="!live">
                 <div class="w-full">
-                    <div class="flex items-end justify-center gap-1">
+                    <p class="mb-3 text-[10px] font-bold uppercase tracking-widest text-[#D29500]/60">Countdown to Expo</p>
+                    <div class="flex items-end justify-center gap-2">
                         <div class="flex flex-col items-center">
-                            <span class="text-2xl font-extrabold leading-none text-white tabular-nums" x-text="String(d).padStart(2,'0')"></span>
-                            <span class="mt-0.5 text-[9px] font-semibold uppercase tracking-wider text-white/40">days</span>
+                            <span class="rounded-xl bg-white/10 px-2.5 py-1.5 text-3xl font-extrabold leading-none text-white tabular-nums shadow-inner" x-text="String(d).padStart(2,'0')"></span>
+                            <span class="mt-1.5 text-[9px] font-semibold uppercase tracking-wider text-white/40">days</span>
                         </div>
-                        <span class="mb-3 text-lg font-bold text-[#D29500]/60">:</span>
+                        <span class="mb-5 text-xl font-bold text-[#D29500]/50">:</span>
                         <div class="flex flex-col items-center">
-                            <span class="text-2xl font-extrabold leading-none text-white tabular-nums" x-text="String(h).padStart(2,'0')"></span>
-                            <span class="mt-0.5 text-[9px] font-semibold uppercase tracking-wider text-white/40">hrs</span>
+                            <span class="rounded-xl bg-white/10 px-2.5 py-1.5 text-3xl font-extrabold leading-none text-white tabular-nums shadow-inner" x-text="String(h).padStart(2,'0')"></span>
+                            <span class="mt-1.5 text-[9px] font-semibold uppercase tracking-wider text-white/40">hrs</span>
                         </div>
-                        <span class="mb-3 text-lg font-bold text-[#D29500]/60">:</span>
+                        <span class="mb-5 text-xl font-bold text-[#D29500]/50">:</span>
                         <div class="flex flex-col items-center">
-                            <span class="text-2xl font-extrabold leading-none text-white tabular-nums" x-text="String(m).padStart(2,'0')"></span>
-                            <span class="mt-0.5 text-[9px] font-semibold uppercase tracking-wider text-white/40">min</span>
+                            <span class="rounded-xl bg-white/10 px-2.5 py-1.5 text-3xl font-extrabold leading-none text-white tabular-nums shadow-inner" x-text="String(m).padStart(2,'0')"></span>
+                            <span class="mt-1.5 text-[9px] font-semibold uppercase tracking-wider text-white/40">min</span>
                         </div>
-                        <span class="mb-3 text-lg font-bold text-[#D29500]/60">:</span>
+                        <span class="mb-5 text-xl font-bold text-[#D29500]/50">:</span>
                         <div class="flex flex-col items-center">
-                            <span class="text-2xl font-extrabold leading-none text-[#D29500] tabular-nums" x-text="String(s).padStart(2,'0')"></span>
-                            <span class="mt-0.5 text-[9px] font-semibold uppercase tracking-wider text-[#D29500]/50">sec</span>
+                            <span class="rounded-xl bg-[#D29500]/20 px-2.5 py-1.5 text-3xl font-extrabold leading-none text-[#D29500] tabular-nums shadow-inner" x-text="String(s).padStart(2,'0')"></span>
+                            <span class="mt-1.5 text-[9px] font-semibold uppercase tracking-wider text-[#D29500]/50">sec</span>
                         </div>
                     </div>
-                    <p class="mt-2 text-[10px] font-medium text-white/40">Until Expo Opens</p>
                 </div>
             </template>
 
-            <span class="mt-1.5 text-[10px] text-white/30 opacity-0 transition-opacity group-hover:opacity-100"
-                  x-text="panel === 'dates' ? 'Hide ^ schedule' : 'See schedule v'"></span>
+            <span class="mt-3 text-[10px] text-white/30 opacity-0 transition-opacity group-hover:opacity-100"
+                  x-text="panel === 'dates' ? '▲ Hide schedule' : '▼ See schedule'"></span>
         </button>
 
         <button @click="panel = panel === 'sectors' ? null : 'sectors'"
-                :class="panel === 'sectors' ? 'border-white/30 bg-white/15' : ''"
-                class="glass-card group flex flex-col items-center justify-center rounded-2xl p-5 text-center transition-all duration-200 hover:-translate-y-0.5 hover:border-white/30 hover:bg-white/15 hover:shadow-lg active:translate-y-0">
+                :class="panel === 'sectors' ? 'border-l-white/50 bg-white/15' : 'border-l-white/20'"
+                class="glass-card group flex flex-col items-center justify-center rounded-2xl border-l-4 p-5 text-center transition-all duration-200 hover:-translate-y-0.5 hover:border-l-white/40 hover:bg-white/15 hover:shadow-lg active:translate-y-0">
             <p class="text-4xl font-extrabold text-white transition-transform duration-150 group-hover:scale-110">5</p>
             <p class="mt-1 text-xs font-medium text-white/60">Sectors</p>
             <span class="mt-1.5 text-[10px] text-white/40 opacity-0 transition-opacity group-hover:opacity-100"
-                  x-text="panel === 'sectors' ? 'Hide ^ sectors' : 'See sectors v'"></span>
+                  x-text="panel === 'sectors' ? '▲ Hide sectors' : '▼ See sectors'"></span>
         </button>
     </div>
 
@@ -205,26 +222,32 @@
         : null;
 @endphp
 <section class="mt-10">
-    <h2 class="mb-4 text-xl font-bold text-[#D29500]">Guest of Honour</h2>
+    <h2 class="mb-4 flex items-center gap-3 text-xl font-bold text-[#D29500]">
+        <span class="inline-block h-6 w-1 rounded-full bg-[#D29500]"></span>
+        Guest of Honour
+    </h2>
     <div class="glass-card overflow-hidden rounded-3xl">
         <div class="flex flex-col sm:flex-row">
             {{-- Photo --}}
-            <div class="relative sm:w-56 sm:shrink-0">
+            <div class="relative sm:w-64 sm:shrink-0">
                 @if($guestPhoto)
                     <img src="{{ $guestPhoto }}" alt="{{ $guest->name }}"
-                         class="h-56 w-full object-cover object-top sm:h-full">
+                         class="h-64 w-full object-cover object-top sm:h-full">
                 @else
-                    <div class="flex h-56 w-full items-center justify-center bg-[#185909]/30 text-5xl font-extrabold text-[#D29500] sm:h-full">
+                    <div class="flex h-64 w-full items-center justify-center bg-[#185909]/30 text-5xl font-extrabold text-[#D29500] sm:h-full">
                         {{ substr($guest->name, 0, 1) }}
                     </div>
                 @endif
-                <div class="absolute inset-0 bg-gradient-to-r from-transparent to-[#111D02]/60 sm:block hidden"></div>
+                {{-- Strong horizontal gradient on desktop, vertical on mobile --}}
+                <div class="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-[#111D02]/80 sm:bg-gradient-to-r sm:from-transparent sm:via-[#111D02]/10 sm:to-[#111D02]/90"></div>
+                {{-- Gold bottom-left accent line --}}
+                <div class="absolute bottom-0 left-0 h-1 w-16 bg-[#D29500]"></div>
             </div>
             {{-- Info --}}
-            <div class="flex flex-col justify-center p-6">
-                <p class="text-xl font-extrabold text-white sm:text-2xl">{{ $guest->name }}</p>
+            <div class="flex flex-col justify-center p-6 sm:p-8">
+                <p class="text-2xl font-extrabold text-white sm:text-3xl">{{ $guest->name }}</p>
                 @if($guest->title)
-                    <p class="mt-1 text-sm font-medium text-[#D29500]">{{ $guest->title }}</p>
+                    <p class="mt-1 text-sm font-semibold text-[#D29500]">{{ $guest->title }}</p>
                 @endif
                 @if($guest->organisation)
                     <p class="text-xs text-white/50">{{ $guest->organisation }}</p>
@@ -241,15 +264,30 @@
 {{-- Sponsors --}}
 @if($sponsors && $sponsors->isNotEmpty())
 <section class="mt-10">
-    <h2 class="mb-4 text-xl font-bold text-[#D29500]">Sponsors &amp; Partners</h2>
-    <div class="flex flex-wrap gap-4">
+    <h2 class="mb-4 flex items-center gap-3 text-xl font-bold text-[#D29500]">
+        <span class="inline-block h-6 w-1 rounded-full bg-[#D29500]"></span>
+        Sponsors &amp; Partners
+    </h2>
+    <div class="flex flex-wrap gap-3">
         @foreach($sponsors as $sponsor)
-            <div class="glass-card flex items-center gap-3 rounded-2xl px-5 py-4">
-                @if($sponsor->logo)
-                    @php $logoSrc = str_starts_with($sponsor->logo,'http') ? $sponsor->logo : Storage::url($sponsor->logo); @endphp
-                    <img src="{{ $logoSrc }}" alt="{{ $sponsor->name }}" class="h-10 w-auto max-w-28 object-contain">
+            @php
+                $tierColor = $sponsor->tier->color();
+                $logoSrc   = $sponsor->logo
+                    ? (str_starts_with($sponsor->logo, 'http') ? $sponsor->logo : Storage::url($sponsor->logo))
+                    : null;
+            @endphp
+            <div class="glass-card flex items-center gap-3 overflow-hidden rounded-2xl px-5 py-3"
+                 style="border-top: 2px solid {{ $tierColor }}40; box-shadow: 0 -1px 0 0 {{ $tierColor }}30 inset;">
+                {{-- Tier colour dot --}}
+                <span class="size-2 shrink-0 rounded-full" style="background: {{ $tierColor }}" title="{{ $sponsor->tier->label() }}"></span>
+                @if($logoSrc)
+                    <img src="{{ $logoSrc }}" alt="{{ $sponsor->name }}"
+                         class="h-9 w-auto max-w-24 object-contain">
                 @endif
-                <span class="font-semibold text-white">{{ $sponsor->name }}</span>
+                <div class="min-w-0">
+                    <span class="block font-semibold text-white truncate">{{ $sponsor->name }}</span>
+                    <span class="text-[10px] font-medium uppercase tracking-wider" style="color: {{ $tierColor }}">{{ $sponsor->tier->label() }}</span>
+                </div>
             </div>
         @endforeach
     </div>
@@ -259,7 +297,10 @@
 {{-- Gallery --}}
 @if($gallery->isNotEmpty())
 <section class="mt-10" x-data="galleryLightbox()">
-    <h2 class="mb-5 text-xl font-bold text-[#D29500]">Expo Gallery</h2>
+    <h2 class="mb-5 flex items-center gap-3 text-xl font-bold text-[#D29500]">
+        <span class="inline-block h-6 w-1 rounded-full bg-[#D29500]"></span>
+        Expo Gallery
+    </h2>
 
     {{-- Grid --}}
     <div class="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
@@ -442,7 +483,10 @@ function galleryLightbox() {
 {{-- Past Expos --}}
 @if($archives->isNotEmpty())
 <section class="mt-10">
-    <h2 class="mb-5 text-xl font-bold text-[#D29500]">Past Expos</h2>
+    <h2 class="mb-5 flex items-center gap-3 text-xl font-bold text-[#D29500]">
+        <span class="inline-block h-6 w-1 rounded-full bg-[#D29500]"></span>
+        Past Expos
+    </h2>
     <div class="space-y-4">
         @foreach($archives as $arch)
         @php

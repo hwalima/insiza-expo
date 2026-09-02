@@ -19,8 +19,32 @@
 </head>
 <body class="bg-expo antialiased">
 
+    {{-- ── Scroll progress bar ── --}}
+    <div
+        x-data="{
+            pct: 0,
+            onScroll() {
+                const el  = document.documentElement;
+                const top = el.scrollTop  || document.body.scrollTop;
+                const h   = el.scrollHeight - el.clientHeight;
+                this.pct  = h > 0 ? Math.round((top / h) * 100) : 0;
+            }
+        }"
+        @scroll.window.passive="onScroll()"
+        class="fixed top-0 left-0 z-50 h-0.5 w-full"
+        aria-hidden="true"
+    >
+        <div class="h-full bg-[#D29500] transition-all duration-100 ease-linear"
+             :style="`width:${pct}%`"></div>
+    </div>
+
     {{-- ── Navigation ── --}}
-    <nav class="sticky top-0 z-40 border-b border-white/10 bg-black/30 backdrop-blur-md">
+    <nav
+        x-data="{ scrolled: false }"
+        @scroll.window.passive="scrolled = window.scrollY > 10"
+        :class="scrolled ? 'border-white/20 bg-black/60 shadow-lg shadow-black/40' : 'border-white/10 bg-black/30'"
+        class="sticky top-0.5 z-40 border-b backdrop-blur-md transition-all duration-300"
+    >
         <div class="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6">
 
             {{-- Logo --}}
@@ -42,7 +66,7 @@
             {{-- Auth links --}}
             <div class="flex items-center gap-2">
                 @auth
-                    <a href="{{ route('dashboard') }}" class="nav-link text-xs">Dashboard</a>
+                    <a href="{{ route('dashboard') }}" class="nav-link text-xs hidden sm:inline">Dashboard</a>
                     @if(auth()->user()->hasAnyRole(['admin','super_admin']))
                         <a href="{{ route('admin.dashboard') }}" class="btn-gold text-xs !py-1.5">Admin</a>
                     @endif
@@ -51,7 +75,7 @@
                         <button type="submit" class="nav-link text-xs">Logout</button>
                     </form>
                 @else
-                    <a href="{{ route('login') }}"    class="nav-link text-xs">Login</a>
+                    <a href="{{ route('login') }}" class="nav-link text-xs hidden sm:inline">Login</a>
                     <a href="{{ route('attend') }}" class="btn-primary text-xs !py-1.5">Attend Free</a>
                 @endauth
             </div>
