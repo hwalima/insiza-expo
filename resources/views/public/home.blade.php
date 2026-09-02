@@ -7,9 +7,9 @@
 <section
     x-data="{
         slides: [
-            'https://insizaexpo.co.zw/images/hero/hero1.jpg',
-            'https://insizaexpo.co.zw/images/hero/hero2.jpg',
-            'https://insizaexpo.co.zw/images/hero/hero3.jpg',
+            '/images/hero/hero1.jpeg',
+            '/images/hero/hero2.jpeg',
+            '/images/hero/hero3.jpeg',
         ],
         current: 0,
         loaded: [false, false, false],
@@ -42,7 +42,7 @@
             class="pointer-events-none absolute inset-0"
             style="display:none"
         >
-            <img :src="slide" class="h-full w-full rounded-3xl object-cover object-center"
+            <img :src="slide" class="hero-slide-img h-full w-full rounded-3xl object-cover object-center"
                  :alt="'Hero slide ' + (i+1)">
         </div>
     </template>
@@ -51,8 +51,10 @@
     <div class="pointer-events-none absolute inset-0 rounded-3xl"
          x-show="!loaded.some(v => v)"
          style="background: linear-gradient(135deg, #185909 0%, #111D02 60%, #1a2e12 100%); display:none"></div>
+
+    {{-- Dark overlay — stronger to handle both light (logo) and dark (photo) slides --}}
     <div class="pointer-events-none absolute inset-0 rounded-3xl"
-         style="background: linear-gradient(135deg, rgba(17,29,2,0.80) 0%, rgba(17,29,2,0.55) 50%, rgba(17,29,2,0.72) 100%);"></div>
+         style="background: linear-gradient(160deg, rgba(17,29,2,0.88) 0%, rgba(17,29,2,0.60) 40%, rgba(17,29,2,0.85) 100%);"></div>
 
     {{-- Gold radial glow top-right --}}
     <div class="pointer-events-none absolute inset-0 rounded-3xl"

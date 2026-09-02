@@ -89,3 +89,15 @@ body {
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: #185909; border-radius: 99px; }
 
+
+/* ─── Hero slideshow ──────────────────────────────────── */
+@keyframes kenBurns {
+    0%   { transform: scale(1.00) translate(0, 0); }
+    50%  { transform: scale(1.08) translate(-1%, -1%); }
+    100% { transform: scale(1.00) translate(0, 0); }
+}
+
+.hero-slide-img {
+    animation: kenBurns 8s ease-in-out infinite;
+    will-change: transform;
+}
