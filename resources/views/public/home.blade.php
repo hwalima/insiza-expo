@@ -541,28 +541,36 @@ function galleryLightbox() {
         <span class="inline-block h-6 w-1 rounded-full bg-[#D29500]"></span>
         Past Expos
     </h2>
-    <div class="space-y-4">
+    <div class="space-y-3">
         @foreach($archives as $arch)
         @php
-            $archGuest = $arch->guestOfHonor;
-            $archPhoto = $archGuest?->photo
+            $archGuest   = $arch->guestOfHonor;
+            $archGallery = $arch->galleryItems;
+            $archPhoto   = $archGuest?->photo
                 ? (Str::startsWith($archGuest->photo, 'http') ? $archGuest->photo : Storage::url($archGuest->photo))
                 : null;
         @endphp
-        <div class="glass-card overflow-hidden rounded-2xl">
-            <div class="flex flex-col sm:flex-row">
 
+        <div class="glass-card overflow-hidden rounded-2xl"
+             x-data="{ open: false }">
+
+            {{-- ── Clickable header row ── --}}
+            <button
+                @click="open = !open"
+                class="flex w-full items-stretch text-left transition hover:bg-white/5 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#D29500]"
+                :aria-expanded="open"
+            >
                 {{-- Guest photo or year badge --}}
-                <div class="relative flex sm:w-40 sm:shrink-0">
+                <div class="relative shrink-0 w-36 sm:w-44">
                     @if($archPhoto)
                         <img src="{{ $archPhoto }}" alt="{{ $archGuest->name }}"
-                             class="h-40 w-full object-cover object-top sm:h-full">
+                             class="h-full w-full object-cover object-top" style="min-height:120px">
                         <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent"></div>
                         <span class="absolute bottom-2 left-2 rounded-lg bg-[#D29500] px-2 py-0.5 text-sm font-extrabold text-[#111D02]">
                             {{ $arch->year }}
                         </span>
                     @else
-                        <div class="flex h-40 w-full items-center justify-center bg-[#185909]/30 sm:h-full">
+                        <div class="flex min-h-[120px] h-full w-full items-center justify-center bg-[#185909]/30">
                             <span class="text-4xl font-extrabold text-[#D29500]">{{ $arch->year }}</span>
                         </div>
                     @endif
@@ -570,7 +578,22 @@ function galleryLightbox() {
 
                 {{-- Details --}}
                 <div class="flex flex-1 flex-col justify-center p-5">
-                    <p class="text-lg font-extrabold text-white">{{ $arch->name }}</p>
+                    <div class="flex items-start justify-between gap-3">
+                        <p class="text-base font-extrabold text-white sm:text-lg">{{ $arch->name }}</p>
+                        {{-- Chevron + gallery count badge --}}
+                        <div class="flex shrink-0 items-center gap-2 pt-0.5">
+                            @if($archGallery->isNotEmpty())
+                                <span class="rounded-full bg-[#D29500]/20 px-2 py-0.5 text-[10px] font-bold text-[#D29500]">
+                                    {{ $archGallery->count() }} photos
+                                </span>
+                            @endif
+                            <svg class="size-4 shrink-0 text-white/40 transition-transform duration-300"
+                                 :class="open ? 'rotate-180' : ''"
+                                 fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
+                            </svg>
+                        </div>
+                    </div>
 
                     @if($arch->theme)
                         <blockquote class="mt-2 border-l-2 border-[#D29500]/50 pl-3">
@@ -579,9 +602,7 @@ function galleryLightbox() {
                     @endif
 
                     @if($archGuest)
-                        <div class="mt-3 flex items-center gap-2">
-                            <span class="text-xs text-white/40 uppercase tracking-wider">Guest of Honour</span>
-                        </div>
+                        <span class="mt-2 text-[10px] uppercase tracking-wider text-white/40">Guest of Honour</span>
                         <p class="text-sm font-semibold text-white">{{ $archGuest->name }}</p>
                         @if($archGuest->title)
                             <p class="text-xs text-white/50">{{ $archGuest->title }}</p>
@@ -589,18 +610,18 @@ function galleryLightbox() {
                     @endif
 
                     @if($arch->previous_winner)
-                        <div class="mt-3 flex flex-wrap items-center gap-3">
-                            @php
-                                $wLogo  = $arch->previous_winner_logo  ? (str_starts_with($arch->previous_winner_logo,  'http') ? $arch->previous_winner_logo  : Storage::url($arch->previous_winner_logo))  : null;
-                                $wImage = $arch->previous_winner_image ? (str_starts_with($arch->previous_winner_image, 'http') ? $arch->previous_winner_image : Storage::url($arch->previous_winner_image)) : null;
-                            @endphp
+                        @php
+                            $wLogo  = $arch->previous_winner_logo  ? (str_starts_with($arch->previous_winner_logo,  'http') ? $arch->previous_winner_logo  : Storage::url($arch->previous_winner_logo))  : null;
+                            $wImage = $arch->previous_winner_image ? (str_starts_with($arch->previous_winner_image, 'http') ? $arch->previous_winner_image : Storage::url($arch->previous_winner_image)) : null;
+                        @endphp
+                        <div class="mt-3 flex flex-wrap items-center gap-2">
                             @if($wLogo)
-                                <img src="{{ $wLogo }}" alt="{{ $arch->previous_winner }}" class="h-8 rounded-lg object-contain bg-white/10 px-1">
+                                <img src="{{ $wLogo }}" alt="{{ $arch->previous_winner }}" class="h-7 rounded-lg object-contain bg-white/10 px-1">
                             @endif
                             @if($wImage)
-                                <img src="{{ $wImage }}" alt="{{ $arch->previous_winner }}" class="h-10 w-10 rounded-full object-cover">
+                                <img src="{{ $wImage }}" alt="{{ $arch->previous_winner }}" class="h-8 w-8 rounded-full object-cover">
                             @endif
-                            <div class="rounded-lg bg-[#D29500]/15 px-3 py-1 text-xs">
+                            <div class="rounded-lg bg-[#D29500]/15 px-2.5 py-1 text-xs">
                                 <span class="text-white/50">Winner:</span>
                                 <span class="ml-1 font-semibold text-[#D29500]">{{ $arch->previous_winner }}</span>
                                 @if($arch->previous_winner_category)
@@ -609,9 +630,172 @@ function galleryLightbox() {
                             </div>
                         </div>
                     @endif
+
+                    {{-- "View Gallery" hint when closed --}}
+                    @if($archGallery->isNotEmpty())
+                        <p class="mt-3 text-xs text-[#D29500]/50 transition"
+                           x-show="!open">
+                            Click to view gallery &darr;
+                        </p>
+                    @endif
+                </div>
+            </button>
+
+            {{-- ── Accordion gallery panel ── --}}
+            @if($archGallery->isNotEmpty())
+            <div
+                x-show="open"
+                x-transition:enter="transition duration-300 ease-out"
+                x-transition:enter-start="opacity-0 -translate-y-2"
+                x-transition:enter-end="opacity-100 translate-y-0"
+                x-transition:leave="transition duration-200 ease-in"
+                x-transition:leave-end="opacity-0"
+                x-data="archGallery{{ $arch->id }}()"
+                class="border-t border-white/10 px-4 pb-5 pt-4"
+                style="display:none"
+            >
+                <p class="mb-3 text-xs font-bold uppercase tracking-widest text-white/30">
+                    {{ $arch->name }} Gallery
+                </p>
+
+                {{-- Masonry-style grid --}}
+                <div class="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4">
+                    @foreach($archGallery as $gi)
+                    @php
+                        $giIsVideo = $gi->isVideo();
+                        $ytId = null;
+                        if ($giIsVideo) {
+                            if (preg_match('#youtu\.be/([a-zA-Z0-9_\-]+)#', $gi->url, $ym)) $ytId = $ym[1];
+                            elseif (preg_match('#youtube\.com/watch\?.*v=([a-zA-Z0-9_\-]+)#', $gi->url, $ym)) $ytId = $ym[1];
+                        }
+                    @endphp
+                    <button
+                        @click="lightbox({{ $loop->index0 }})"
+                        class="group relative overflow-hidden rounded-xl bg-black/30 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#D29500]"
+                        aria-label="{{ $gi->caption ?? ($giIsVideo ? 'Play video' : 'View image') }}"
+                    >
+                        @if($giIsVideo && $ytId)
+                            <img src="https://img.youtube.com/vi/{{ $ytId }}/mqdefault.jpg"
+                                 alt="{{ $gi->caption ?? 'Video' }}"
+                                 class="h-32 w-full object-cover transition duration-300 group-hover:scale-105 group-hover:brightness-75">
+                        @elseif($giIsVideo)
+                            <div class="flex h-32 w-full items-center justify-center bg-[#185909]/40 transition group-hover:brightness-75">
+                                <svg class="size-10 text-[#D29500]/60" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                            </div>
+                        @else
+                            <img src="{{ $gi->resolvedUrl() }}"
+                                 alt="{{ $gi->caption ?? 'Gallery image' }}"
+                                 class="h-32 w-full object-cover transition duration-300 group-hover:scale-105 group-hover:brightness-75"
+                                 loading="lazy">
+                        @endif
+
+                        {{-- Play icon overlay for videos --}}
+                        @if($giIsVideo)
+                            <div class="absolute inset-0 flex items-center justify-center">
+                                <div class="flex size-10 items-center justify-center rounded-full bg-black/50 text-white shadow transition group-hover:bg-[#D29500] group-hover:text-[#111D02]">
+                                    <svg class="size-5 translate-x-0.5" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                                </div>
+                            </div>
+                        @endif
+
+                        @if($gi->caption)
+                            <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent px-2 py-1.5 opacity-0 transition group-hover:opacity-100">
+                                <p class="truncate text-[10px] font-medium text-white">{{ $gi->caption }}</p>
+                            </div>
+                        @endif
+
+                        <span class="absolute right-1.5 top-1.5 rounded px-1.5 py-0.5 text-[9px] font-bold uppercase
+                            {{ $giIsVideo ? 'bg-[#D29500] text-[#111D02]' : 'bg-black/40 text-white/60' }}">
+                            {{ $giIsVideo ? 'video' : 'photo' }}
+                        </span>
+                    </button>
+                    @endforeach
+                </div>
+
+                {{-- Inline lightbox --}}
+                <div x-show="lb.open"
+                     x-transition:enter="transition duration-200 ease-out"
+                     x-transition:enter-start="opacity-0"
+                     x-transition:enter-end="opacity-100"
+                     x-transition:leave="transition duration-150 ease-in"
+                     x-transition:leave-end="opacity-0"
+                     @keydown.escape.window="lb.open && (lb.open = false)"
+                     @keydown.arrow-left.window="lb.open && prev()"
+                     @keydown.arrow-right.window="lb.open && next()"
+                     class="fixed inset-0 z-50 flex items-center justify-center bg-black/90 p-4"
+                     style="display:none"
+                     role="dialog" aria-modal="true">
+                    <div class="absolute inset-0" @click="lb.open = false"></div>
+                    <div class="relative z-10 flex max-h-full w-full max-w-4xl flex-col items-center gap-3" @click.stop>
+                        <button @click="lb.open = false"
+                                class="absolute -top-1 right-0 flex size-8 items-center justify-center rounded-full bg-white/10 text-white hover:bg-white/20"
+                                aria-label="Close">
+                            <svg class="size-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+                            </svg>
+                        </button>
+                        <div class="w-full overflow-hidden rounded-2xl bg-black">
+                            @foreach($archGallery as $gi)
+                            @php $giIsVideo = $gi->isVideo(); $embed = $giIsVideo ? $gi->embedUrl() : null; @endphp
+                            <div x-show="lb.current === {{ $loop->index0 }}" style="display:none">
+                                @if($giIsVideo && $embed)
+                                    <div class="aspect-video w-full">
+                                        <iframe :src="lb.current === {{ $loop->index0 }} ? '{{ $embed }}?autoplay=1' : ''"
+                                                class="h-full w-full" allow="autoplay; fullscreen" allowfullscreen frameborder="0"
+                                                title="{{ $gi->caption ?? 'Video' }}"></iframe>
+                                    </div>
+                                @elseif($giIsVideo)
+                                    <video controls class="aspect-video w-full" src="{{ $gi->resolvedUrl() }}"></video>
+                                @else
+                                    <img src="{{ $gi->resolvedUrl() }}" alt="{{ $gi->caption ?? '' }}"
+                                         class="max-h-[75vh] w-full object-contain">
+                                @endif
+                            </div>
+                            @endforeach
+                        </div>
+                        <div class="flex w-full items-center justify-between px-1">
+                            <p class="text-sm text-white/60">
+                                @foreach($archGallery as $gi)
+                                    <span x-show="lb.current === {{ $loop->index0 }}" style="display:none">{{ $gi->caption ?? '' }}</span>
+                                @endforeach
+                            </p>
+                            <p class="text-xs text-white/40"><span x-text="lb.current + 1"></span> / {{ $archGallery->count() }}</p>
+                        </div>
+                        @if($archGallery->count() > 1)
+                        <div class="absolute inset-y-0 left-0 flex items-center pl-1">
+                            <button @click="prev()" class="flex size-8 items-center justify-center rounded-full bg-white/10 text-white hover:bg-white/20" aria-label="Previous">
+                                <svg class="size-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
+                            </button>
+                        </div>
+                        <div class="absolute inset-y-0 right-0 flex items-center pr-1">
+                            <button @click="next()" class="flex size-8 items-center justify-center rounded-full bg-white/10 text-white hover:bg-white/20" aria-label="Next">
+                                <svg class="size-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+                            </button>
+                        </div>
+                        @endif
+                    </div>
                 </div>
             </div>
-        </div>
+
+            <script>
+            function archGallery{{ $arch->id }}() {
+                return {
+                    lb: { open: false, current: 0 },
+                    total: {{ $archGallery->count() }},
+                    lightbox(i) { this.lb.current = i; this.lb.open = true; document.body.style.overflow = 'hidden'; },
+                    prev() { this.lb.current = (this.lb.current - 1 + this.total) % this.total; },
+                    next() { this.lb.current = (this.lb.current + 1) % this.total; },
+                };
+            }
+            </script>
+            @else
+            {{-- No gallery — show a placeholder when expanded --}}
+            <div x-show="open" x-transition class="border-t border-white/10 px-5 py-6 text-center text-sm text-white/30" style="display:none">
+                No gallery items for this expo yet.
+            </div>
+            @endif
+
+        </div>{{-- end glass-card --}}
         @endforeach
     </div>
 </section>

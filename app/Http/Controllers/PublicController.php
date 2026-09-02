@@ -14,7 +14,7 @@ class PublicController extends Controller
         $guest    = $expo?->guestOfHonor;
         $gallery  = $expo?->galleryItems()->get() ?? collect();
         $archives = Expo::where('is_active', false)
-            ->with('guestOfHonor')
+            ->with(['guestOfHonor', 'galleryItems'])
             ->orderByDesc('year')
             ->limit(5)
             ->get();
