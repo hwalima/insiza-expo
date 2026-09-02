@@ -557,31 +557,46 @@ function galleryLightbox() {
             {{-- ── Clickable header row ── --}}
             <button
                 @click="open = !open"
-                class="flex w-full items-stretch text-left transition hover:bg-white/5 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#D29500]"
+                class="flex w-full flex-col text-left transition hover:bg-white/5 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#D29500] sm:flex-row sm:items-stretch"
                 :aria-expanded="open"
             >
-                {{-- Guest photo or year badge --}}
-                <div class="relative shrink-0 w-36 sm:w-44">
+                {{-- Guest photo / year badge — full-width banner on mobile, fixed sidebar on sm+ --}}
+                <div class="relative w-full sm:w-44 sm:shrink-0">
                     @if($archPhoto)
                         <img src="{{ $archPhoto }}" alt="{{ $archGuest->name }}"
-                             class="h-full w-full object-cover object-top" style="min-height:120px">
-                        <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent"></div>
-                        <span class="absolute bottom-2 left-2 rounded-lg bg-[#D29500] px-2 py-0.5 text-sm font-extrabold text-[#111D02]">
+                             class="h-48 w-full object-cover object-top sm:h-full">
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent sm:bg-gradient-to-r sm:from-transparent sm:to-black/50"></div>
+                        <span class="absolute bottom-3 left-3 rounded-lg bg-[#D29500] px-2.5 py-0.5 text-sm font-extrabold text-[#111D02]">
                             {{ $arch->year }}
                         </span>
+                        {{-- Chevron pinned top-right on mobile only --}}
+                        <div class="absolute right-3 top-3 flex items-center gap-2 sm:hidden">
+                            @if($archGallery->isNotEmpty())
+                                <span class="rounded-full bg-black/50 px-2 py-0.5 text-[10px] font-bold text-[#D29500] backdrop-blur-sm">
+                                    {{ $archGallery->count() }} photos
+                                </span>
+                            @endif
+                            <span class="flex size-7 items-center justify-center rounded-full bg-black/50 backdrop-blur-sm">
+                                <svg class="size-4 text-white transition-transform duration-300"
+                                     :class="open ? 'rotate-180' : ''"
+                                     fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
+                                </svg>
+                            </span>
+                        </div>
                     @else
-                        <div class="flex min-h-[120px] h-full w-full items-center justify-center bg-[#185909]/30">
+                        <div class="flex h-24 w-full items-center justify-center bg-[#185909]/30 sm:h-full">
                             <span class="text-4xl font-extrabold text-[#D29500]">{{ $arch->year }}</span>
                         </div>
                     @endif
                 </div>
 
                 {{-- Details --}}
-                <div class="flex flex-1 flex-col justify-center p-5">
-                    <div class="flex items-start justify-between gap-3">
-                        <p class="text-base font-extrabold text-white sm:text-lg">{{ $arch->name }}</p>
-                        {{-- Chevron + gallery count badge --}}
-                        <div class="flex shrink-0 items-center gap-2 pt-0.5">
+                <div class="flex flex-1 flex-col justify-center p-4 sm:p-5">
+                    <div class="flex items-start justify-between gap-2">
+                        <p class="text-base font-extrabold leading-snug text-white sm:text-lg">{{ $arch->name }}</p>
+                        {{-- Chevron + badge — desktop only (mobile version is overlaid on photo) --}}
+                        <div class="hidden shrink-0 items-center gap-2 pt-0.5 sm:flex">
                             @if($archGallery->isNotEmpty())
                                 <span class="rounded-full bg-[#D29500]/20 px-2 py-0.5 text-[10px] font-bold text-[#D29500]">
                                     {{ $archGallery->count() }} photos
@@ -614,12 +629,9 @@ function galleryLightbox() {
                             $wLogo  = $arch->previous_winner_logo  ? (str_starts_with($arch->previous_winner_logo,  'http') ? $arch->previous_winner_logo  : Storage::url($arch->previous_winner_logo))  : null;
                             $wImage = $arch->previous_winner_image ? (str_starts_with($arch->previous_winner_image, 'http') ? $arch->previous_winner_image : Storage::url($arch->previous_winner_image)) : null;
                         @endphp
-                        <div class="mt-3 flex flex-wrap items-center gap-2">
+                        <div class="mt-2 flex flex-wrap items-center gap-2">
                             @if($wLogo)
-                                <img src="{{ $wLogo }}" alt="{{ $arch->previous_winner }}" class="h-7 rounded-lg object-contain bg-white/10 px-1">
-                            @endif
-                            @if($wImage)
-                                <img src="{{ $wImage }}" alt="{{ $arch->previous_winner }}" class="h-8 w-8 rounded-full object-cover">
+                                <img src="{{ $wLogo }}" alt="{{ $arch->previous_winner }}" class="h-6 rounded object-contain bg-white/10 px-1">
                             @endif
                             <div class="rounded-lg bg-[#D29500]/15 px-2.5 py-1 text-xs">
                                 <span class="text-white/50">Winner:</span>
@@ -631,7 +643,7 @@ function galleryLightbox() {
                         </div>
                     @endif
 
-                    {{-- "View Gallery" hint when closed --}}
+                    {{-- "Tap to view gallery" hint when closed --}}
                     @if($archGallery->isNotEmpty())
                         <p class="mt-3 text-xs text-[#D29500]/50 transition"
                            x-show="!open">
