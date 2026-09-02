@@ -12,13 +12,14 @@ class PublicController extends Controller
         $expo     = Expo::active();
         $sponsors = $expo?->sponsors()->orderBy('tier')->get();
         $guest    = $expo?->guestOfHonor;
+        $gallery  = $expo?->galleryItems()->get() ?? collect();
         $archives = Expo::where('is_active', false)
             ->with('guestOfHonor')
             ->orderByDesc('year')
             ->limit(5)
             ->get();
 
-        return view('public.home', compact('expo', 'sponsors', 'guest', 'archives'));
+        return view('public.home', compact('expo', 'sponsors', 'guest', 'gallery', 'archives'));
     }
 
     public function floorPlan(): View

@@ -69,11 +69,16 @@ class WhatsAppController extends Controller
 
         Log::info('WA incoming message', ['from' => $from, 'body' => substr($body, 0, 120)]);
 
-        try {
-            $this->bot->handle($from, trim($body));
-        } catch (\Throwable $e) {
-            Log::error('WA bot error', ['error' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
-        }
+        // Process AFTER response is sent — Wasender times out if we take too long
+        $bot = $this->bot;
+        $message = trim($body);
+        app()->terminating(function () use ($bot, $from, $message) {
+            try {
+                $bot->handle($from, $message);
+            } catch (\Throwable $e) {
+                Log::error('WA bot error', ['error' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
+            }
+        });
 
         return response('', 200);
     }

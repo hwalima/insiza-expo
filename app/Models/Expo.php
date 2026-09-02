@@ -47,4 +47,9 @@ class Expo extends Model
     {
         return $this->hasMany(Booking::class);
     }
+
+    public function galleryItems(): HasMany
+    {
+        return $this->hasMany(ExpoGalleryItem::class)->orderBy('sort_order')->orderBy('id');
+    }
 }

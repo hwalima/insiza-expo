@@ -256,6 +256,189 @@
 </section>
 @endif
 
+{{-- Gallery --}}
+@if($gallery->isNotEmpty())
+<section class="mt-10" x-data="galleryLightbox()">
+    <h2 class="mb-5 text-xl font-bold text-[#D29500]">Expo Gallery</h2>
+
+    {{-- Grid --}}
+    <div class="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+        @foreach($gallery as $index => $item)
+            @php $isVideo = $item->isVideo(); @endphp
+
+            <button
+                @click="open({{ $index }})"
+                class="group relative overflow-hidden rounded-2xl bg-black/30 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#D29500]"
+                aria-label="{{ $item->caption ?? ($isVideo ? 'Play video' : 'View image') }}">
+
+                @if($isVideo)
+                    {{-- Video thumbnail: try YouTube thumbnail, else branded placeholder --}}
+                    @php
+                        $ytId = null;
+                        if (preg_match('#youtu\.be/([a-zA-Z0-9_\-]+)#', $item->url, $m)) $ytId = $m[1];
+                        elseif (preg_match('#youtube\.com/watch\?.*v=([a-zA-Z0-9_\-]+)#', $item->url, $m)) $ytId = $m[1];
+                    @endphp
+                    @if($ytId)
+                        <img src="https://img.youtube.com/vi/{{ $ytId }}/hqdefault.jpg"
+                             alt="{{ $item->caption ?? 'Video thumbnail' }}"
+                             class="h-40 w-full object-cover transition duration-300 group-hover:scale-105 group-hover:brightness-75">
+                    @else
+                        <div class="flex h-40 w-full items-center justify-center bg-[#185909]/40 transition group-hover:brightness-75">
+                            <svg class="size-12 text-[#D29500]/60" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M8 5v14l11-7z"/>
+                            </svg>
+                        </div>
+                    @endif
+                    {{-- Play overlay --}}
+                    <div class="absolute inset-0 flex items-center justify-center">
+                        <div class="flex size-12 items-center justify-center rounded-full bg-black/50 text-white shadow-lg transition group-hover:bg-[#D29500] group-hover:text-[#111D02]">
+                            <svg class="size-6 translate-x-0.5" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M8 5v14l11-7z"/>
+                            </svg>
+                        </div>
+                    </div>
+                @else
+                    <img src="{{ $item->resolvedUrl() }}"
+                         alt="{{ $item->caption ?? 'Gallery image' }}"
+                         class="h-40 w-full object-cover transition duration-300 group-hover:scale-105 group-hover:brightness-75"
+                         loading="lazy">
+                    {{-- Zoom icon on hover --}}
+                    <div class="absolute inset-0 flex items-center justify-center opacity-0 transition group-hover:opacity-100">
+                        <div class="flex size-10 items-center justify-center rounded-full bg-black/50 text-white shadow">
+                            <svg class="size-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0zm-3-3v6m-3-3h6"/>
+                            </svg>
+                        </div>
+                    </div>
+                @endif
+
+                @if($item->caption)
+                    <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent px-3 py-2 opacity-0 transition group-hover:opacity-100">
+                        <p class="truncate text-xs font-medium text-white">{{ $item->caption }}</p>
+                    </div>
+                @endif
+
+                {{-- Type badge --}}
+                <span class="absolute right-2 top-2 rounded-md px-1.5 py-0.5 text-[10px] font-bold uppercase
+                    {{ $isVideo ? 'bg-[#D29500] text-[#111D02]' : 'bg-black/40 text-white/70' }}">
+                    {{ $isVideo ? 'video' : 'photo' }}
+                </span>
+            </button>
+        @endforeach
+    </div>
+
+    {{-- Lightbox overlay --}}
+    <div x-show="isOpen"
+         x-transition:enter="transition duration-200 ease-out"
+         x-transition:enter-start="opacity-0"
+         x-transition:enter-end="opacity-100"
+         x-transition:leave="transition duration-150 ease-in"
+         x-transition:leave-end="opacity-0"
+         @keydown.escape.window="close()"
+         @keydown.arrow-left.window="prev()"
+         @keydown.arrow-right.window="next()"
+         class="fixed inset-0 z-50 flex items-center justify-center bg-black/90 p-4"
+         style="display:none"
+         role="dialog" aria-modal="true" aria-label="Gallery lightbox">
+
+        {{-- Backdrop click closes --}}
+        <div class="absolute inset-0" @click="close()"></div>
+
+        {{-- Content --}}
+        <div class="relative z-10 flex max-h-full w-full max-w-4xl flex-col items-center gap-4"
+             @click.stop>
+
+            {{-- Close --}}
+            <button @click="close()"
+                    class="absolute -top-2 right-0 flex size-9 items-center justify-center rounded-full bg-white/10 text-white hover:bg-white/20"
+                    aria-label="Close">
+                <svg class="size-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+            </button>
+
+            {{-- Media --}}
+            <div class="w-full overflow-hidden rounded-2xl bg-black">
+                @foreach($gallery as $index => $item)
+                    @php $isVideo = $item->isVideo(); $embed = $isVideo ? $item->embedUrl() : null; @endphp
+                    <div x-show="current === {{ $index }}" style="display:none">
+                        @if($isVideo && $embed)
+                            <div class="aspect-video w-full">
+                                <iframe x-show="current === {{ $index }}"
+                                        :src="current === {{ $index }} ? '{{ $embed }}?autoplay=1' : ''"
+                                        class="h-full w-full"
+                                        allow="autoplay; fullscreen"
+                                        allowfullscreen
+                                        frameborder="0"
+                                        title="{{ $item->caption ?? 'Video' }}">
+                                </iframe>
+                            </div>
+                        @elseif($isVideo)
+                            {{-- Direct video file --}}
+                            <video controls class="aspect-video w-full" src="{{ $item->resolvedUrl() }}"></video>
+                        @else
+                            <img src="{{ $item->resolvedUrl() }}"
+                                 alt="{{ $item->caption ?? 'Gallery image' }}"
+                                 class="max-h-[75vh] w-full object-contain">
+                        @endif
+                    </div>
+                @endforeach
+            </div>
+
+            {{-- Caption + counter --}}
+            <div class="flex w-full items-center justify-between px-1">
+                <p class="text-sm text-white/60">
+                    @foreach($gallery as $index => $item)
+                        <span x-show="current === {{ $index }}" style="display:none">
+                            {{ $item->caption ?? '' }}
+                        </span>
+                    @endforeach
+                </p>
+                <p class="shrink-0 text-xs text-white/40">
+                    <span x-text="current + 1"></span> / {{ $gallery->count() }}
+                </p>
+            </div>
+
+            {{-- Prev / Next --}}
+            @if($gallery->count() > 1)
+            <div class="absolute inset-y-0 left-0 flex items-center pl-2">
+                <button @click="prev()"
+                        class="flex size-9 items-center justify-center rounded-full bg-white/10 text-white hover:bg-white/20"
+                        aria-label="Previous">
+                    <svg class="size-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/>
+                    </svg>
+                </button>
+            </div>
+            <div class="absolute inset-y-0 right-0 flex items-center pr-2">
+                <button @click="next()"
+                        class="flex size-9 items-center justify-center rounded-full bg-white/10 text-white hover:bg-white/20"
+                        aria-label="Next">
+                    <svg class="size-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
+                    </svg>
+                </button>
+            </div>
+            @endif
+        </div>
+    </div>
+</section>
+
+<script>
+function galleryLightbox() {
+    return {
+        isOpen: false,
+        current: 0,
+        total: {{ $gallery->count() }},
+        open(index) { this.current = index; this.isOpen = true; document.body.style.overflow = 'hidden'; },
+        close()     { this.isOpen = false; document.body.style.overflow = ''; },
+        prev()      { this.current = (this.current - 1 + this.total) % this.total; },
+        next()      { this.current = (this.current + 1) % this.total; },
+    };
+}
+</script>
+@endif
+
 {{-- Past Expos --}}
 @if($archives->isNotEmpty())
 <section class="mt-10">

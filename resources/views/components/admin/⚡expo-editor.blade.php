@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\Expo;
+use App\Models\ExpoGalleryItem;
 use App\Models\GuestOfHonor;
 use App\Models\Sponsor;
 use Livewire\Attributes\Computed;
@@ -57,6 +58,16 @@ new class extends Component
     public $wImageFile        = null;
     public string $wImageMode = 'url';
 
+    // ── Gallery tab ───────────────────────────────────────────
+    public bool   $showGalleryForm    = false;
+    public ?int   $editingGalleryId   = null;
+    public string $gItemType         = 'image';  // 'image' | 'video'
+    public string $gItemUrl          = '';
+    public string $gItemCaption      = '';
+    public int    $gItemOrder        = 0;
+    public $gItemFile                = null;
+    public string $gItemMode         = 'url';    // 'url' | 'upload'
+
     public function mount(?int $expoId = null): void
     {
         if ($expoId) {
@@ -103,11 +114,19 @@ new class extends Component
             ->orderBy('sort_order')->orderBy('tier')->get();
     }
 
+    #[Computed]
+    public function galleryItems()
+    {
+        return ExpoGalleryItem::where('expo_id', $this->selectedExpoId)
+            ->orderBy('sort_order')->orderBy('id')->get();
+    }
+
     public function updatedSelectedExpoId(): void
     {
         $expo = Expo::find($this->selectedExpoId);
         if ($expo) $this->loadExpo($expo);
         unset($this->sponsors);
+        unset($this->galleryItems);
     }
 
     private function loadExpo(Expo $expo): void
@@ -283,6 +302,68 @@ new class extends Component
         session()->flash('success', 'Previous winner saved.');
     }
 
+    // ── Gallery methods ───────────────────────────────────────
+
+    public function openGalleryForm(?int $id = null): void
+    {
+        $this->editingGalleryId = $id;
+        $this->gItemFile        = null;
+
+        if ($id) {
+            $item = ExpoGalleryItem::findOrFail($id);
+            $this->gItemType    = $item->type;
+            $this->gItemUrl     = $item->url;
+            $this->gItemCaption = $item->caption ?? '';
+            $this->gItemOrder   = $item->sort_order;
+            $this->gItemMode    = 'url';
+        } else {
+            $this->gItemType    = 'image';
+            $this->gItemUrl     = '';
+            $this->gItemCaption = '';
+            $this->gItemOrder   = $this->galleryItems->count();
+            $this->gItemMode    = 'url';
+        }
+
+        $this->showGalleryForm = true;
+    }
+
+    public function saveGalleryItem(): void
+    {
+        $this->validate([
+            'gItemUrl'  => $this->gItemMode === 'url' ? 'required|string|max:2048' : 'nullable',
+            'gItemFile' => $this->gItemMode === 'upload' ? 'required|image|max:8192' : 'nullable|image|max:8192',
+        ]);
+
+        if ($this->gItemMode === 'upload' && $this->gItemFile) {
+            $url = $this->gItemFile->store('gallery', 'public');
+        } else {
+            $url = trim($this->gItemUrl);
+        }
+
+        $data = [
+            'expo_id'    => $this->selectedExpoId,
+            'type'       => $this->gItemType,
+            'url'        => $url,
+            'caption'    => $this->gItemCaption ?: null,
+            'sort_order' => $this->gItemOrder,
+        ];
+
+        $this->editingGalleryId
+            ? ExpoGalleryItem::findOrFail($this->editingGalleryId)->update($data)
+            : ExpoGalleryItem::create($data);
+
+        $this->showGalleryForm = false;
+        $this->gItemFile       = null;
+        unset($this->galleryItems);
+        session()->flash('success', 'Gallery item saved.');
+    }
+
+    public function deleteGalleryItem(int $id): void
+    {
+        ExpoGalleryItem::findOrFail($id)->delete();
+        unset($this->galleryItems);
+    }
+
     /** Store file or return URL depending on mode */
     private function resolveMedia($file, string $url, string $mode, string $folder): ?string
     {
@@ -331,6 +412,7 @@ new class extends Component
         ['id' => 'guest',   'label' => 'Guest of Honour'],
         ['id' => 'sponsors','label' => 'Sponsors & Partners'],
         ['id' => 'winner',  'label' => 'Previous Winner'],
+        ['id' => 'gallery', 'label' => 'Gallery'],
     ] as $t)
         @if($t['id'] === 'info' || ! $isCreating)
         <button @click="tab = '{{ $t['id'] }}'"
@@ -615,6 +697,156 @@ new class extends Component
 
         <button type="submit" class="btn-primary">Save Previous Winner</button>
     </form>
+</div>
+
+{{-- ── TAB: Gallery ──────────────────────────────────────────── --}}
+<div x-show="tab === 'gallery'" x-cloak>
+
+    <div class="mb-4 flex items-center justify-between">
+        <p class="text-sm text-white/50">{{ $this->galleryItems->count() }} item(s) in gallery</p>
+        <button wire:click="openGalleryForm()" class="btn-primary text-sm">+ Add Item</button>
+    </div>
+
+    {{-- Gallery grid --}}
+    <div class="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+        @forelse($this->galleryItems as $item)
+            @php
+                $isVideo = $item->isVideo();
+                $thumb   = $isVideo ? null : $item->resolvedUrl();
+            @endphp
+            <div class="glass-card group relative overflow-hidden rounded-2xl">
+
+                {{-- Thumbnail / video badge --}}
+                @if($isVideo)
+                    <div class="flex h-28 w-full items-center justify-center bg-black/40">
+                        <svg class="size-10 text-[#D29500]" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M8 5v14l11-7z"/>
+                        </svg>
+                    </div>
+                @else
+                    <img src="{{ $thumb }}" alt="{{ $item->caption ?? 'Gallery image' }}"
+                         class="h-28 w-full object-cover">
+                @endif
+
+                {{-- Type badge --}}
+                <span class="absolute left-2 top-2 rounded-lg px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider
+                    {{ $isVideo ? 'bg-[#D29500] text-[#111D02]' : 'bg-[#185909]/80 text-white' }}">
+                    {{ $item->type }}
+                </span>
+
+                {{-- Caption + actions --}}
+                <div class="px-3 py-2">
+                    @if($item->caption)
+                        <p class="truncate text-xs text-white/70">{{ $item->caption }}</p>
+                    @endif
+                    <p class="mt-0.5 truncate text-[10px] text-white/30">#{{ $item->sort_order }} &bull; {{ Str::limit($item->url, 30) }}</p>
+                    <div class="mt-2 flex gap-2">
+                        <button wire:click="openGalleryForm({{ $item->id }})"
+                                class="text-xs text-blue-400 hover:text-blue-300">Edit</button>
+                        <button wire:click="deleteGalleryItem({{ $item->id }})"
+                                wire:confirm="Remove this gallery item?"
+                                class="text-xs text-red-400 hover:text-red-300">Delete</button>
+                    </div>
+                </div>
+            </div>
+        @empty
+            <div class="col-span-full rounded-2xl border border-white/10 py-10 text-center text-sm text-white/30">
+                No gallery items yet. Add images or video links for this expo.
+            </div>
+        @endforelse
+    </div>
+
+    {{-- Add / Edit Modal --}}
+    @if($showGalleryForm)
+    <div class="fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div class="absolute inset-0 bg-black/60 backdrop-blur-sm"
+             wire:click="$set('showGalleryForm', false)"></div>
+
+        <div class="glass-card relative w-full max-w-md rounded-3xl p-6 shadow-2xl">
+            <h3 class="mb-5 text-lg font-bold text-[#D29500]">
+                {{ $editingGalleryId ? 'Edit Gallery Item' : 'Add Gallery Item' }}
+            </h3>
+
+            <form wire:submit="saveGalleryItem" class="space-y-4">
+
+                {{-- Type toggle --}}
+                <div>
+                    <label class="label">Type</label>
+                    <div class="flex gap-2">
+                        <button type="button" wire:click="$set('gItemType','image')"
+                                class="{{ $gItemType === 'image' ? 'btn-primary' : 'btn-ghost' }} text-sm flex-1">
+                            Image
+                        </button>
+                        <button type="button" wire:click="$set('gItemType','video')"
+                                class="{{ $gItemType === 'video' ? 'btn-primary' : 'btn-ghost' }} text-sm flex-1">
+                            Video
+                        </button>
+                    </div>
+                </div>
+
+                {{-- URL / Upload (images only) --}}
+                @if($gItemType === 'image')
+                    <div x-data="{ mode: $wire.entangle('gItemMode') }">
+                        <label class="label">Image</label>
+                        <div class="mb-2 flex gap-2">
+                            <button type="button" @click="mode = 'url'"
+                                    :class="mode === 'url' ? 'btn-primary text-xs !py-1' : 'btn-ghost text-xs !py-1'">URL</button>
+                            <button type="button" @click="mode = 'upload'"
+                                    :class="mode === 'upload' ? 'btn-primary text-xs !py-1' : 'btn-ghost text-xs !py-1'">Upload</button>
+                        </div>
+                        <div x-show="mode === 'url'">
+                            <input wire:model="gItemUrl" type="text"
+                                   placeholder="https://example.com/photo.jpg"
+                                   class="glass-input">
+                            @error('gItemUrl') <p class="mt-1 text-xs text-red-400">{{ $message }}</p> @enderror
+                        </div>
+                        <div x-show="mode === 'upload'">
+                            <input wire:model="gItemFile" type="file" accept="image/*" class="glass-input">
+                            @error('gItemFile') <p class="mt-1 text-xs text-red-400">{{ $message }}</p> @enderror
+                        </div>
+                        @if($gItemUrl && $gItemMode === 'url')
+                            <img src="{{ $gItemUrl }}" alt="preview"
+                                 class="mt-2 h-20 w-full rounded-xl object-cover">
+                        @endif
+                    </div>
+                @else
+                    {{-- Video --}}
+                    <div>
+                        <label class="label">Video URL</label>
+                        <input wire:model="gItemUrl" type="text"
+                               placeholder="https://youtube.com/watch?v=... or https://vimeo.com/..."
+                               class="glass-input">
+                        <p class="mt-1 text-[10px] text-white/30">
+                            Supports YouTube, Vimeo, or any direct video link.
+                        </p>
+                        @error('gItemUrl') <p class="mt-1 text-xs text-red-400">{{ $message }}</p> @enderror
+                    </div>
+                @endif
+
+                {{-- Caption --}}
+                <div>
+                    <label class="label">Caption <span class="text-white/30">(optional)</span></label>
+                    <input wire:model="gItemCaption" type="text"
+                           placeholder="Short description of this item"
+                           class="glass-input">
+                </div>
+
+                {{-- Sort order --}}
+                <div>
+                    <label class="label">Sort Order</label>
+                    <input wire:model="gItemOrder" type="number" min="0" class="glass-input">
+                </div>
+
+                <div class="flex gap-2 pt-1">
+                    <button type="submit" class="btn-primary flex-1">Save</button>
+                    <button type="button" wire:click="$set('showGalleryForm', false)"
+                            class="btn-ghost flex-1">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    @endif
+
 </div>
 
 </div>
