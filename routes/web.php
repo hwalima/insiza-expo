@@ -1,8 +1,10 @@
 <?php
 
+use App\Http\Controllers\Admin\AdminUserController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\SettingsController;
 use App\Http\Controllers\AttendeeController;
+use App\Http\Controllers\Auth\ChangePasswordController;
 use App\Http\Controllers\DeployWebhookController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\PublicController;
@@ -24,6 +26,10 @@ Route::get('/dashboard', function () {
 })->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::middleware('auth')->group(function () {
+    // Force-password-change (exempt from the middleware itself via route name check)
+    Route::get('/change-password',  [ChangePasswordController::class, 'show'])->name('password.change');
+    Route::post('/change-password', [ChangePasswordController::class, 'update'])->name('password.change.update');
+
     Route::get('/profile',    [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile',  [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
@@ -49,6 +55,13 @@ Route::middleware(['auth', 'role:admin|super_admin'])->prefix('admin')->name('ad
     Route::post('/settings/test-email',       [SettingsController::class, 'testEmail'])->name('settings.test-email');
     Route::patch('/settings/integrations',    [SettingsController::class, 'updateIntegrations'])->name('settings.integrations');
     Route::patch('/settings/general',         [SettingsController::class, 'updateGeneral'])->name('settings.general');
+
+    // Admin user management
+    Route::get('/users',                      [AdminUserController::class, 'index'])->name('users');
+    Route::post('/users',                     [AdminUserController::class, 'store'])->name('users.store');
+    Route::patch('/users/{user}',             [AdminUserController::class, 'update'])->name('users.update');
+    Route::post('/users/{user}/reset-password',[AdminUserController::class, 'resetPassword'])->name('users.reset-password');
+    Route::delete('/users/{user}',            [AdminUserController::class, 'destroy'])->name('users.destroy');
 });
 
 // ── WhatsApp + Deploy webhooks (CSRF exempt) ─────────────────

@@ -29,10 +29,19 @@
             <a href="{{ route('admin.floor-plan') }}"  class="{{ request()->routeIs('admin.floor-plan')  ? 'nav-link-active' : 'nav-link' }} block">Floor Plan Editor</a>
             <a href="{{ route('admin.bookings') }}"    class="{{ request()->routeIs('admin.bookings')    ? 'nav-link-active' : 'nav-link' }} block">Bookings</a>
             <a href="{{ route('admin.attendees') }}"  class="{{ request()->routeIs('admin.attendees*')   ? 'nav-link-active' : 'nav-link' }} block">Attendees</a>
+            <a href="{{ route('admin.users') }}"      class="{{ request()->routeIs('admin.users*')       ? 'nav-link-active' : 'nav-link' }} block">Admin Users</a>
             <a href="{{ route('admin.settings') }}"   class="{{ request()->routeIs('admin.settings*')   ? 'nav-link-active' : 'nav-link' }} block">Settings</a>
         </nav>
         <div class="border-t border-white/10 p-3">
-            <a href="{{ route('home') }}" class="nav-link block text-xs">← Public Site</a>
+            <a href="{{ route('profile.edit') }}" class="nav-link block text-xs">
+                <span class="flex items-center gap-2">
+                    <span class="flex size-5 items-center justify-center rounded-full bg-[#185909] text-[9px] font-bold text-[#D29500]">
+                        {{ strtoupper(substr(auth()->user()->name ?? 'A', 0, 1)) }}
+                    </span>
+                    {{ Str::limit(auth()->user()->name ?? 'Profile', 18) }}
+                </span>
+            </a>
+            <a href="{{ route('home') }}" class="nav-link block text-xs mt-1">← Public Site</a>
             <form method="POST" action="{{ route('logout') }}">
                 @csrf
                 <button type="submit" class="nav-link w-full text-left text-xs text-red-400">Logout</button>

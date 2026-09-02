@@ -66,7 +66,7 @@
             {{-- Auth links --}}
             <div class="flex items-center gap-2">
                 @auth
-                    <a href="{{ route('dashboard') }}" class="nav-link text-xs hidden sm:inline">Dashboard</a>
+                    <a href="{{ route('profile.edit') }}" class="nav-link text-xs hidden sm:inline">Dashboard</a>
                     @if(auth()->user()->hasAnyRole(['admin','super_admin']))
                         <a href="{{ route('admin.dashboard') }}" class="btn-gold text-xs !py-1.5">Admin</a>
                     @endif
