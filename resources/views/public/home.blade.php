@@ -670,7 +670,7 @@ function galleryLightbox() {
                         }
                     @endphp
                     <button
-                        @click="lightbox({{ $loop->index0 }})"
+                        @click="lightbox({{ $loop->index }})"
                         class="group relative overflow-hidden rounded-xl bg-black/30 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#D29500]"
                         aria-label="{{ $gi->caption ?? ($giIsVideo ? 'Play video' : 'View image') }}"
                     >
@@ -737,10 +737,10 @@ function galleryLightbox() {
                         <div class="w-full overflow-hidden rounded-2xl bg-black">
                             @foreach($archGallery as $gi)
                             @php $giIsVideo = $gi->isVideo(); $embed = $giIsVideo ? $gi->embedUrl() : null; @endphp
-                            <div x-show="lb.current === {{ $loop->index0 }}" style="display:none">
+                            <div x-show="lb.current === {{ $loop->index }}" style="display:none">
                                 @if($giIsVideo && $embed)
                                     <div class="aspect-video w-full">
-                                        <iframe :src="lb.current === {{ $loop->index0 }} ? '{{ $embed }}?autoplay=1' : ''"
+                                        <iframe :src="lb.current === {{ $loop->index }} ? '{{ $embed }}?autoplay=1' : ''"
                                                 class="h-full w-full" allow="autoplay; fullscreen" allowfullscreen frameborder="0"
                                                 title="{{ $gi->caption ?? 'Video' }}"></iframe>
                                     </div>
@@ -756,7 +756,7 @@ function galleryLightbox() {
                         <div class="flex w-full items-center justify-between px-1">
                             <p class="text-sm text-white/60">
                                 @foreach($archGallery as $gi)
-                                    <span x-show="lb.current === {{ $loop->index0 }}" style="display:none">{{ $gi->caption ?? '' }}</span>
+                                    <span x-show="lb.current === {{ $loop->index }}" style="display:none">{{ $gi->caption ?? '' }}</span>
                                 @endforeach
                             </p>
                             <p class="text-xs text-white/40"><span x-text="lb.current + 1"></span> / {{ $archGallery->count() }}</p>

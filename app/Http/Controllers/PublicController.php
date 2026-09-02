@@ -12,12 +12,23 @@ class PublicController extends Controller
         $expo     = Expo::active();
         $sponsors = $expo?->sponsors()->orderBy('tier')->get();
         $guest    = $expo?->guestOfHonor;
-        $gallery  = $expo?->galleryItems()->get() ?? collect();
-        $archives = Expo::where('is_active', false)
-            ->with(['guestOfHonor', 'galleryItems'])
-            ->orderByDesc('year')
-            ->limit(5)
-            ->get();
+
+        // Guard against missing table if migration hasn't run yet
+        try {
+            $gallery  = $expo?->galleryItems()->get() ?? collect();
+            $archives = Expo::where('is_active', false)
+                ->with(['guestOfHonor', 'galleryItems'])
+                ->orderByDesc('year')
+                ->limit(5)
+                ->get();
+        } catch (\Throwable $e) {
+            $gallery  = collect();
+            $archives = Expo::where('is_active', false)
+                ->with('guestOfHonor')
+                ->orderByDesc('year')
+                ->limit(5)
+                ->get();
+        }
 
         return view('public.home', compact('expo', 'sponsors', 'guest', 'gallery', 'archives'));
     }
